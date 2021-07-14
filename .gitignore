@@ -1,3 +1,5 @@
 venv
 testsuite/__pycache__
 best_models.json
+*.json
+.idea
