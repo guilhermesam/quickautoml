@@ -1,11 +1,8 @@
-import numpy as np
-import pandas as pd
-
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
-from test_suite import *
+from testsuite.services import *
 
 rng = np.random.RandomState(777)
 
@@ -23,10 +20,10 @@ model_parameters = {
 }
 
 test_parameters = {
-    'cv': 3,
+    'n_splits': 3,
 }
 
-test_suite = BestParamsTestSuite(output_file=True)
+test_suite = BestParamsTestSuite(output_path='best_models')
 best_params = test_suite.run(X, y, model_parameters, test_parameters)
 
 print(best_params)
