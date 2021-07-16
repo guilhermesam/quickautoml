@@ -1,13 +1,6 @@
+import numpy as np
 from json import dump, load
 from numpy import ndarray, array
-
-
-def read_json(path: str) -> dict:
-    try:
-        file = open(path, 'r')
-        return load(file)
-    except IOError as error:
-        raise error(f'I/O Error: {error}')
 
 
 def write_json(data: dict, filepath: str) -> None:
@@ -30,6 +23,14 @@ def convert_to_np_array(vector: any) -> ndarray:
     if not isinstance(vector, ndarray):
         return array(vector)
     return vector
+
+
+def get_problem_type(vector: any) -> str:
+    vector = convert_to_np_array(vector)
+    if vector.dtype == np.float:
+        return 'regression'
+    else:
+        return 'classification'
 
 
 def implement_training_methods(model: any) -> bool:

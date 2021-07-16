@@ -19,11 +19,5 @@ model_parameters = {
     }
 }
 
-test_parameters = {
-    'n_splits': 3,
-}
-
-test_suite = BestParamsTestSuite(output_path='best_models')
-best_params = test_suite.run(X, y, model_parameters, test_parameters)
-
-print(best_params)
+test_suite = BestParamsTestSuite(output_path='best_models', verbose=True)
+best_params = test_suite.run(X, y, model_parameters)
