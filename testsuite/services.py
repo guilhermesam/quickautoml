@@ -70,6 +70,8 @@ class ParameterizedTestSuite:
         ----------
         stratify: if True, get stratified samples for each class in the features vector. Recommended for
             classification problems
+        k_folds: number of folds used to cross validation step
+        float_precision: precision of float numbers, in output
         """
         self.stratify = stratify
         self.k_folds = k_folds
