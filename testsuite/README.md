@@ -10,7 +10,7 @@ testsuite é uma ferramenta utilizada em conjunto com outros scripts Python que 
 git clone https://github.com/Malware-Hunter/guilherme_samuel
 ```
 ### Encontrando os melhores hiperparâmetros
-O teste para obtenção dos melhores hiperparâmetros é feito pela classe BestParamsTestSuite, que recebe como parâmetros no construtor:
+O teste para obtenção dos melhores hiperparâmetros é feito pela classe BestParamsTestSuite, que recebe como parâmetro no construtor um dicionário, com as configurações do teste:
 
 * **verbose**: se for True, exibe no console os melhores parâmetros encontrados para cada modelo;
 * **output_path**: o caminho de um arquivo json que, se fornecido, irá armazenar a saída da busca pelos melhores hiperparâmetros.
@@ -63,11 +63,12 @@ model.score(data)
 **test_parameters**: um dicionário contendo os parâmetros utilizados pelo teste, propriamente dito. Pode receber os seguintes valores:
 
 ## Testando os modelos
-O teste dos modelos é feito através da classe ParameterizedTestSuite, que recebe como parâmetro no construtor:
+O teste dos modelos é feito através da classe ParameterizedTestSuite, que recebe como parâmetro no construtor um dicionário, com as configurações do teste:
 * **stratify**: se True, obtém amostras estratificadas de cada classe no vetor de features. Recomendado em problemas de classificação.
 * **n_splits**: número de folds do cross validation: padrão=4
 * **float_precision**: precisão do resultado, em casas decimais: padrão=3
-	
+* **problem_type**: tipo de problema a qual se aplica o teste (classificação e regressão)
+
 O teste é realizado através do método run( ), que possui os seguintes parâmetros:
 * **x**: implementação de uma matriz contendo as features ;
 * **y**: implementação de uma matriz contendo os rótulos (labels);
