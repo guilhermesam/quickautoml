@@ -25,7 +25,14 @@ models = [
     })
 ]
 
-test = ParameterizedTestSuite(stratify=True, k_folds=4, float_precision=3)
+test_settings = {
+    'k_folds': 4,
+    'float_precision': 3,
+    'problem_type': 'classification',
+    'stratify': True
+}
+
+test = ParameterizedTestSuite(test_settings)
 results = test.run(X, y, models)
 
 print(results)

@@ -4,30 +4,24 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, mean_
 
 import numpy as np
 
-from testsuite.utils import \
-    check_shape_compatibility, \
-    write_json, \
-    convert_to_np_array, \
-    get_problem_type
+from testsuite.utils import check_shape_compatibility, write_json, convert_to_np_array
 
 
 class BestParamsTestSuite:
     """
     Class to find best hyperparameters for a list of models
     """
-    def __init__(self, verbose: bool = False, output_path: str = None, k_folds: int = 4, n_jobs: int = -1):
-        """
-        Parameters
-        ----------
-        verbose: if True, shows in console the best params for each model
-        output_path: if provided, saves the best params for each model in a json
-        k_folds: number of folds in cross validation step
-        n_jobs: number of jobs running in paralel
-        """
-        self.verbose = verbose
-        self.output_path = output_path
-        self.k_folds = k_folds
-        self.n_jobs = n_jobs
+    def __init__(self, test_settings: dict):
+        self.k_folds = test_settings.get('k_folds') or 4
+        self.n_jobs = test_settings.get('n_jobs') or -1
+        self.verbose = test_settings.get('verbose') or False
+        self.output_path = test_settings.get('output_path')
+
+    def __str__(self):
+        return f'k_folds: {self.k_folds}\n' \
+               f'n_jobs: {self.n_jobs}\n' \
+               f'verbose: {self.verbose}\n' \
+               f'output_path: {self.output_path}'
 
     def run(self, x: any, y: any, model_parameters: dict):
         """
@@ -64,18 +58,17 @@ class ParameterizedTestSuite:
     Class to test models with tuned hyperparameters
     """
 
-    def __init__(self, stratify: bool = False, k_folds: int = 4, float_precision: int = 3):
-        """
-        Parameters
-        ----------
-        stratify: if True, get stratified samples for each class in the features vector. Recommended for
-            classification problems
-        k_folds: number of folds used to cross validation step
-        float_precision: precision of float numbers, in output
-        """
-        self.stratify = stratify
-        self.k_folds = k_folds
-        self.float_precision = float_precision
+    def __init__(self, test_settings: dict):
+        self.problem_type = test_settings.get('problem_type')
+        self.k_folds = test_settings.get('k_folds') or 4
+        self.stratify = test_settings.get('stratify') or False
+        self.float_precision = test_settings.get('float_precision') or 3
+
+    def __str__(self):
+        return f'k_folds: {self.k_folds}\n' \
+               f'problem_type: {self.problem_type}\n' \
+               f'stratify: {self.stratify}\n' \
+               f'float_precision: {self.float_precision}'
 
     def run(self, x: any, y: any, models: list) -> DataFrame:
         """
@@ -93,12 +86,12 @@ class ParameterizedTestSuite:
         y = convert_to_np_array(y)
         kfold = self.__make_folds()
 
-        problem_type = get_problem_type(y)
-
-        if problem_type == 'classification':
+        if self.problem_type == 'classification':
             return self.__classification(x, y, models, kfold)
-        elif problem_type == 'regression':
+        elif self.problem_type == 'regression':
             return self.__regression(x, y, models, kfold)
+        else:
+            print('Problem type must be passed (classification or regression)')
 
     def __make_folds(self):
         if self.stratify:
@@ -106,37 +99,45 @@ class ParameterizedTestSuite:
         else:
             return KFold(n_splits=self.k_folds)
 
-    def __make_report(self, *metrics_list: any) -> Series:
-        scores_series = Series(name='scores_series')
+    def __make_report(self, *metrics_list: any) -> list:
+        scores = []
         for metric in metrics_list:
-            metric_series = Series({
-                f'mean_{metric.name}': np.round(np.mean(metric), self.float_precision),
-                f'std_{metric.name}': np.round(np.std(metric), self.float_precision)
-            })
-            scores_series.append(metric_series)
-        return scores_series
+            scores.append(np.round(np.mean(metric), self.float_precision))
+            scores.append(np.round(np.std(metric), self.float_precision))
+        return scores
 
     def __regression(self, x: any, y: any, models: list, kfold: any) -> DataFrame:
-        scores_df = DataFrame()
+        scores_df = DataFrame(columns=[
+            'mean_r2', 'std_r2',
+            'mean_mse', 'std_mse',
+        ])
 
         for model in models:
             mse = []
             r2 = []
 
-            for train, test in kfold.split:
+            for train, test in kfold.split(x, y):
                 model.fit(x[train], y[train])
                 predictions = model.predict(x[test])
                 mse.append(mean_absolute_error(y[test], predictions))
                 r2.append(r2_score(y[test], predictions))
 
-            scores_series = self.__make_report(Series(mse, name='mse'),
-                                               Series(r2, name='r2'))
-            scores_df = scores_df.append(scores_series)
+            scores_df = scores_df.append(
+                Series(
+                    data=self.__make_report(mse, r2),
+                    index=scores_df.columns,
+                    name=model.__class__.__name__
+                )
+            )
 
         return scores_df
 
     def __classification(self, x: any, y: any, models: list, kfold: any) -> DataFrame:
-        scores_df = DataFrame()
+        scores_df = DataFrame(columns=[
+            'mean_accuracy', 'std_accuracy',
+            'mean_recall', 'std_recall',
+            'mean_precision', 'std_precision'
+        ])
 
         for model in models:
             accuracy = []
@@ -150,9 +151,12 @@ class ParameterizedTestSuite:
                 recall.append(recall_score(y[test], predictions))
                 precision.append(precision_score(y[test], predictions))
 
-            score_series = self.__make_report(Series(accuracy, name='accuracy'),
-                                              Series(recall, name='recall'),
-                                              Series(precision, name='precision'))
-            scores_df = scores_df.append(score_series)
+            scores_df = scores_df.append(
+                Series(
+                    data=self.__make_report(accuracy, recall, precision),
+                    index=scores_df.columns,
+                    name=model.__class__.__name__
+                )
+            )
 
         return scores_df

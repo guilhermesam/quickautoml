@@ -19,5 +19,13 @@ model_parameters = {
     }
 }
 
-test_suite = BestParamsTestSuite(output_path='best_models', verbose=True)
+test_settings = {
+    'verbose': False,
+    'output_path': 'best_models.json',
+    'k_folds': 4,
+    'n_jobs': -1
+}
+
+test_suite = BestParamsTestSuite(test_settings)
 best_params = test_suite.run(X, y, model_parameters)
+print(test_suite)
