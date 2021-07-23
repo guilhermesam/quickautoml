@@ -1,31 +1,45 @@
 from sklearn.datasets import make_classification
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
 from testsuite.services import *
 
-rng = np.random.RandomState(777)
+import unittest
+from os.path import isfile
 
-X, y = make_classification(n_samples=600, random_state=rng)
 
-model_parameters = {
-    KNeighborsClassifier(): {
-        'n_neighbors': [3, 5],
-        'p': [1, 2],
-    },
-    RandomForestClassifier(): {
-        'n_estimators': [100, 200],
-        'max_features': ['auto', 'sqrt'],
-    }
-}
+class BestParamsTestTestSuite(unittest.TestCase):
+    def setUp(self) -> None:
+        rng = np.random.RandomState(777)
+        self.X, self.y = make_classification(n_samples=600, random_state=rng)
+        self.test_settings = {
+            'verbose': False,
+            'output_path': None,
+            'k_folds': 4,
+            'n_jobs': -1
+        }
 
-test_settings = {
-    'verbose': False,
-    'output_path': 'best_models.json',
-    'k_folds': 4,
-    'n_jobs': -1
-}
+    def test_with_sklearn_models(self):
+        model_parameters = {
+            KNeighborsClassifier(): {
+                'n_neighbors': [3, 5],
+                'p': [1, 2],
+            }
+        }
 
-test_suite = BestParamsTestSuite(test_settings)
-best_params = test_suite.run(X, y, model_parameters)
-print(test_suite)
+        test_suite = BestParamsTestSuite(self.test_settings)
+        best_params = test_suite.run(self.X, self.y, model_parameters)
+        self.assertEqual(len(best_params.keys()), len(model_parameters.keys()))
+
+    def test_json_generation(self):
+        model_parameters = {
+            KNeighborsClassifier(): {
+                'n_neighbors': [3, 5],
+                'p': [1, 2],
+            }
+        }
+        self.test_settings.update({'output_path': 'best_models'})
+
+        test_suite = BestParamsTestSuite(self.test_settings)
+        _ = test_suite.run(self.X, self.y, model_parameters)
+
+        self.assertTrue(isfile('best_models.json'))

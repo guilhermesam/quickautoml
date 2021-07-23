@@ -4,35 +4,58 @@ from sklearn.datasets import make_classification
 
 import numpy as np
 import pandas as pd
+import unittest
 
 from testsuite.services import ParameterizedTestSuite
+from testsuite.__tests__.models import LogisticRegression
 
-pd.set_option('display.max_columns', None)
 
-rng = np.random.RandomState(777)
-X, y = make_classification(n_samples=600, random_state=rng)
+class ParametrizedTestTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        pd.set_option('display.max_columns', None)
+        rng = np.random.RandomState(777)
+        self.X, self.y = make_classification(n_samples=600, random_state=rng)
+        self.classification_stats = ['mean_accuracy', 'std_accuracy', 'mean_recall',
+                                     'std_recall', 'mean_precision', 'std_precision']
 
-X = pd.DataFrame(X)
+    def test_with_sklearn_models(self):
+        rf = RandomForestClassifier(**{
+            "max_features": "sqrt",
+            "n_estimators": 200
+        })
 
-models = [
-    RandomForestClassifier(**{
-        "max_features": "sqrt",
-        "n_estimators": 200
-        }),
-    KNeighborsClassifier(**{
-        "n_neighbors": 5,
-        "p": 1
-    })
-]
+        knn = KNeighborsClassifier(**{
+            "n_neighbors": 5,
+            "p": 1
+        })
 
-test_settings = {
-    'k_folds': 4,
-    'float_precision': 3,
-    'problem_type': 'classification',
-    'stratify': True
-}
+        models = [rf, knn]
+        test_settings = {
+            'k_folds': 4,
+            'float_precision': 3,
+            'problem_type': 'classification',
+            'stratify': True
+        }
 
-test = ParameterizedTestSuite(test_settings)
-results = test.run(X, y, models)
+        test = ParameterizedTestSuite(test_settings)
+        results = test.run(self.X, self.y, models)
+        self.assertEqual(list(results.shape), [len(models), len(self.classification_stats)])
 
-print(results)
+    def test_with_personal_model(self):
+        lr = LogisticRegression(learning_rate=0.1, gradient_descent=False)
+        models = [lr]
+
+        test_settings = {
+            'k_folds': 4,
+            'float_precision': 3,
+            'problem_type': 'classification',
+            'stratify': True
+        }
+
+        test = ParameterizedTestSuite(test_settings)
+        results = test.run(self.X, self.y, models)
+        self.assertEqual(list(results.shape), [len(models), len(self.classification_stats)])
+
+
+if __name__ == '__main__':
+    unittest.main()
