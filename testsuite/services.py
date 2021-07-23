@@ -23,7 +23,7 @@ class BestParamsTestSuite:
                f'verbose: {self.verbose}\n' \
                f'output_path: {self.output_path}'
 
-    def run(self, x: any, y: any, model_parameters: dict):
+    def run(self, x: any, y: any, model_parameters: dict) -> dict:
         """
         x: any implementation of 2D matrix with features for training
         y: any implementation of 2D matrix with labels
