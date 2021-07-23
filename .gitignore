@@ -4,3 +4,4 @@ best_models.json
 *.json
 .idea
 testsuite/test.py
+/__tests__
