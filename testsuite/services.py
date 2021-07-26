@@ -15,7 +15,8 @@ class BestParamsTestSuite:
         self.k_folds = test_settings.get('k_folds') or 4
         self.n_jobs = test_settings.get('n_jobs') or -1
         self.verbose = test_settings.get('verbose') or False
-        self.output_path = test_settings.get('output_path')
+        self.output_path = test_settings.get('output_path') or 'NO_PATH'
+        self.scoring = test_settings.get('scoring')
 
     def __str__(self):
         return f'k_folds: {self.k_folds}\n' \
@@ -38,7 +39,8 @@ class BestParamsTestSuite:
             grid_search = GridSearchCV(estimator=model,
                                        param_grid=model_parameters.get(model),
                                        cv=self.k_folds,
-                                       n_jobs=self.n_jobs)
+                                       n_jobs=self.n_jobs,
+                                       scoring=self.scoring or model.score)
             grid_search.fit(x, y)
             best_params = grid_search.best_params_
 
@@ -47,7 +49,7 @@ class BestParamsTestSuite:
             if self.verbose:
                 print(f'Best params for {model.__class__.__name__}: {best_params}')
 
-        if self.output_path:
+        if self.output_path != 'NO_PATH':
             write_json(data=best_models, filepath=self.output_path)
 
         return best_models

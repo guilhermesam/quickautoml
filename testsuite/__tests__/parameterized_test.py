@@ -14,7 +14,7 @@ class ParametrizedTestTestCase(unittest.TestCase):
     def setUp(self) -> None:
         pd.set_option('display.max_columns', None)
         rng = np.random.RandomState(777)
-        self.X, self.y = make_classification(n_samples=600, random_state=rng)
+        self.X, self.y = make_classification(n_samples=50, random_state=rng)
         self.classification_stats = ['mean_accuracy', 'std_accuracy', 'mean_recall',
                                      'std_recall', 'mean_precision', 'std_precision']
 
@@ -42,7 +42,7 @@ class ParametrizedTestTestCase(unittest.TestCase):
         self.assertEqual(list(results.shape), [len(models), len(self.classification_stats)])
 
     def test_with_personal_model(self):
-        lr = LogisticRegression(learning_rate=0.1, gradient_descent=False)
+        lr = LogisticRegression(learning_rate=0.1, fit_intercept=False)
         models = [lr]
 
         test_settings = {

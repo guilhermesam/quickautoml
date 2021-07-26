@@ -2,6 +2,7 @@ from sklearn.datasets import make_classification
 from sklearn.neighbors import KNeighborsClassifier
 
 from testsuite.services import *
+from testsuite.__tests__.models import LogisticRegression
 
 import unittest
 from os.path import isfile
@@ -10,12 +11,12 @@ from os.path import isfile
 class BestParamsTestTestSuite(unittest.TestCase):
     def setUp(self) -> None:
         rng = np.random.RandomState(777)
-        self.X, self.y = make_classification(n_samples=600, random_state=rng)
+        self.X, self.y = make_classification(n_samples=50, random_state=rng)
         self.test_settings = {
             'verbose': False,
-            'output_path': None,
             'k_folds': 4,
-            'n_jobs': -1
+            'n_jobs': -1,
+            'scoring': 'accuracy'
         }
 
     def test_with_sklearn_models(self):
@@ -25,6 +26,20 @@ class BestParamsTestTestSuite(unittest.TestCase):
                 'p': [1, 2],
             }
         }
+        self.test_settings.update({'output_path': 'best_knn'})
+
+        test_suite = BestParamsTestSuite(self.test_settings)
+        best_params = test_suite.run(self.X, self.y, model_parameters)
+        self.assertEqual(len(best_params.keys()), len(model_parameters.keys()))
+
+    def test_with_personal_models(self):
+        model_parameters = {
+            LogisticRegression(): {
+                'learning_rate': [0.1, 0.5],
+                'fit_intercept': [True, False]
+            }
+        }
+        self.test_settings.update({'output_path': 'best_logistic'})
 
         test_suite = BestParamsTestSuite(self.test_settings)
         best_params = test_suite.run(self.X, self.y, model_parameters)
@@ -37,9 +52,13 @@ class BestParamsTestTestSuite(unittest.TestCase):
                 'p': [1, 2],
             }
         }
-        self.test_settings.update({'output_path': 'best_models'})
+        self.test_settings.update({'output_path': 'test'})
 
         test_suite = BestParamsTestSuite(self.test_settings)
         _ = test_suite.run(self.X, self.y, model_parameters)
 
-        self.assertTrue(isfile('best_models.json'))
+        self.assertTrue(isfile('test.json'))
+
+
+if __name__ == '__main__':
+    unittest.main()
