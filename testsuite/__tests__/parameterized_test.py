@@ -56,6 +56,36 @@ class ParametrizedTestTestCase(unittest.TestCase):
         results = test.run(self.X, self.y, models)
         self.assertEqual(list(results.shape), [len(models), len(self.classification_stats)])
 
+    def test_with_list_data(self):
+        rf = RandomForestClassifier(**{
+            "max_features": "sqrt",
+            "n_estimators": 200
+        })
+
+        models = [rf]
+        test_settings = {
+            'k_folds': 4,
+            'float_precision': 3,
+            'problem_type': 'classification',
+            'stratify': True
+        }
+        self.X = [
+            [1, 2, 3],
+            [1, 4, 2],
+            [2, 1, 4],
+            [1, 4, 2],
+            [1, 2, 3],
+            [1, 3, 2],
+            [3, 2, 1],
+            [2, 2, 1],
+            [1, 3, 1],
+            [1, 4, 2]
+        ]
+        self.y = [0, 0, 1, 1, 1, 0, 1, 0, 1, 0]
+        test = ParameterizedTestSuite(test_settings)
+        results = test.run(self.X, self.y, models)
+        self.assertEqual(list(results.shape), [len(models), len(self.classification_stats)])
+
 
 if __name__ == '__main__':
     unittest.main()

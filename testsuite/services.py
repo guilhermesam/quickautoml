@@ -151,7 +151,7 @@ class ParameterizedTestSuite:
                 predictions = model.predict(x[test])
                 accuracy.append(accuracy_score(y[test], predictions))
                 recall.append(recall_score(y[test], predictions))
-                precision.append(precision_score(y[test], predictions))
+                precision.append(precision_score(y[test], predictions, zero_division=1))
 
             scores_df = scores_df.append(
                 Series(
