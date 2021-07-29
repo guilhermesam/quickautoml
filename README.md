@@ -5,10 +5,16 @@ testsuite é uma ferramenta utilizada em conjunto com outros scripts Python que 
 * Testar diferentes modelos, através de métricas como acurácia, precisão e recall, dado um conjunto de dados em comum.
 
 ## Como utilizar
-### Clonar o repositório
+* Clonar o repositório
 ```bash
 git clone https://github.com/Malware-Hunter/guilherme_samuel
 ```
+* Instalar a biblioteca
+```bash
+cd guilherme_samuel
+sh distribute.sh
+```
+
 ### Encontrando os melhores hiperparâmetros
 O teste para obtenção dos melhores hiperparâmetros é feito pela classe BestParamsTestSuite, que recebe como parâmetro no construtor um dicionário, com as configurações do teste:
 
