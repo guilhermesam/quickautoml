@@ -1,11 +1,12 @@
 from sklearn.datasets import make_classification
 from sklearn.neighbors import KNeighborsClassifier
-
-from testsuite.services import *
-from testsuite.__tests__.models import LogisticRegression
-
-import unittest
 from os.path import isfile
+import unittest
+
+from firecannon.services import *
+from models import LogisticRegression
+import glob
+import os
 
 
 class BestParamsTestTestSuite(unittest.TestCase):
@@ -18,6 +19,11 @@ class BestParamsTestTestSuite(unittest.TestCase):
             'n_jobs': -1,
             'scoring': 'accuracy'
         }
+
+    def tearDown(self) -> None:
+        generated_jsons = glob.glob('*.json')
+        for json in generated_jsons:
+            os.remove(json)
 
     def test_with_sklearn_models(self):
         model_parameters = {

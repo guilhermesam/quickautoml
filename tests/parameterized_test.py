@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import unittest
 
-from testsuite.services import ParameterizedTestSuite
-from testsuite.__tests__.models import LogisticRegression
+from firecannon.services import ParameterizedTestSuite
+from .models import LogisticRegression
 
 
 class ParametrizedTestTestCase(unittest.TestCase):

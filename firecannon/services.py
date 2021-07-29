@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, mean_
 
 import numpy as np
 
-from testsuite.utils import check_shape_compatibility, write_json, convert_to_np_array
+from firecannon.utils import check_shape_compatibility, write_json, convert_to_np_array
 
 
 class BestParamsTestSuite:

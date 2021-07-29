@@ -1,0 +1,2 @@
+class ProblemTypeNotSupplied:
+  pass

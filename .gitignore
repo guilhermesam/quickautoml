@@ -1,8 +1,16 @@
+# IDE Files
 venv
-testsuite/__pycache__
+firecannon/__pycache__
+.idea
+
+# Generated Files
 best_models.json
 *.json
-.idea
-testsuite/test.py
-/__tests__
-testsuite/TODO
+
+# Personal Files
+firecannon/TODO
+
+# Build Files
+build
+dist
+firecannon.egg-info
