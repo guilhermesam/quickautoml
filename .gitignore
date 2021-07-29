@@ -1,6 +1,6 @@
 # IDE Files
 venv
-firecannon/__pycache__
+/__pycache__
 .idea
 
 # Generated Files
@@ -14,3 +14,4 @@ firecannon/TODO
 build
 dist
 firecannon.egg-info
+*.pyc

@@ -1,24 +1,19 @@
-import setuptools
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as docs:
     long_description = docs.read()
 
-setuptools.setup(
+setup(
     name='firecannon',
     version='0.0.1',
     author='Wabbajack',
+    packages=find_packages(include=['firecannon']),
     description='Quick tests for supervised machine learning models',
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='MIT',
     install_requires=[
-        'sklearn',
-        'pandas',
-        'numpy'
+        'sklearn', 'numpy', 'pandas'
     ],
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
+    test_suite='tests'
 )
