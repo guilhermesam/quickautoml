@@ -31,8 +31,3 @@ def get_problem_type(vector: any) -> str:
         return 'regression'
     else:
         return 'classification'
-
-
-def implement_training_methods(model: any) -> bool:
-    fit_method = getattr(model, 'fit', None)
-    return callable(fit_method)

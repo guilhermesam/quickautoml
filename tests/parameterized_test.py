@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import unittest
 
-from firecannon.services import ParameterizedTestSuite
+from firecannon.protocols import ParameterizedTestSuite
 from .models import LogisticRegression
 
 

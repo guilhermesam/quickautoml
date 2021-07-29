@@ -1,16 +1,19 @@
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, KFold
 from pandas import DataFrame, Series
-from sklearn.metrics import accuracy_score, recall_score, precision_score, mean_absolute_error, r2_score
 
 import numpy as np
 
 from firecannon.utils import check_shape_compatibility, write_json, convert_to_np_array
+from firecannon.errors import IncompatibleDataShapeException, ProblemTypeNotSuppliedException
+from firecannon.presentation.reports import BarplotReport
+from firecannon.protocols.metrics import RegressionMetrics, ClassificationMetrics
 
 
 class BestParamsTestSuite:
     """
     Class to find best hyperparameters for a list of models
     """
+
     def __init__(self, test_settings: dict):
         self.k_folds = test_settings.get('k_folds') or 4
         self.n_jobs = test_settings.get('n_jobs') or -1
@@ -31,7 +34,7 @@ class BestParamsTestSuite:
         model_parameters: dict, which keys are instantiated models and values are lists with hyperparameter
         """
         if not check_shape_compatibility(x, y):
-            raise ValueError('X e y possuem valores inconsistentes de amostras!')
+            raise IncompatibleDataShapeException(x.shape[0], y.shape[0])
 
         best_models = {}
 
@@ -65,6 +68,7 @@ class ParameterizedTestSuite:
         self.k_folds = test_settings.get('k_folds') or 4
         self.stratify = test_settings.get('stratify') or False
         self.float_precision = test_settings.get('float_precision') or 3
+        self.report_type = test_settings.get('report_type') or 'dataframe'
 
     def __str__(self):
         return f'k_folds: {self.k_folds}\n' \
@@ -72,7 +76,7 @@ class ParameterizedTestSuite:
                f'stratify: {self.stratify}\n' \
                f'float_precision: {self.float_precision}'
 
-    def run(self, x: any, y: any, models: list) -> DataFrame:
+    def run(self, x: any, y: any, models: list):
         """
         Parameters
         ----------
@@ -82,7 +86,7 @@ class ParameterizedTestSuite:
         -------
         """
         if not check_shape_compatibility(x, y):
-            raise ValueError('X e y possuem valores inconsistentes de amostras!')
+            raise IncompatibleDataShapeException(x.shape[0], y.shape[0])
 
         x = convert_to_np_array(x)
         y = convert_to_np_array(y)
@@ -93,7 +97,7 @@ class ParameterizedTestSuite:
         elif self.problem_type == 'regression':
             return self.__regression(x, y, models, kfold)
         else:
-            print('Problem type must be passed (classification or regression)')
+            raise ProblemTypeNotSuppliedException('Problem type must be passed (classification or regression)')
 
     def __make_folds(self):
         if self.stratify:
@@ -108,11 +112,8 @@ class ParameterizedTestSuite:
             scores.append(np.round(np.std(metric), self.float_precision))
         return scores
 
-    def __regression(self, x: any, y: any, models: list, kfold: any) -> DataFrame:
-        scores_df = DataFrame(columns=[
-            'mean_r2', 'std_r2',
-            'mean_mse', 'std_mse',
-        ])
+    def __regression(self, x: any, y: any, models: list, kfold: any):
+        scores = {}
 
         for model in models:
             mse = []
@@ -121,18 +122,17 @@ class ParameterizedTestSuite:
             for train, test in kfold.split(x, y):
                 model.fit(x[train], y[train])
                 predictions = model.predict(x[test])
-                mse.append(mean_absolute_error(y[test], predictions))
-                r2.append(r2_score(y[test], predictions))
+                mse.append(RegressionMetrics.mse(y[test], predictions))
+                r2.append(RegressionMetrics.r2_score(y[test], predictions))
 
-            scores_df = scores_df.append(
-                Series(
-                    data=self.__make_report(mse, r2),
-                    index=scores_df.columns,
-                    name=model.__class__.__name__
-                )
-            )
+            scores.update({
+                model.__class__.__name__: {
+                    'r2': r2,
+                    'mse': mse
+                }
+            })
 
-        return scores_df
+        return BarplotReport.make_report(scores)
 
     def __classification(self, x: any, y: any, models: list, kfold: any) -> DataFrame:
         scores_df = DataFrame(columns=[
@@ -149,9 +149,9 @@ class ParameterizedTestSuite:
             for train, test in kfold.split(x, y):
                 model.fit(x[train], y[train])
                 predictions = model.predict(x[test])
-                accuracy.append(accuracy_score(y[test], predictions))
-                recall.append(recall_score(y[test], predictions))
-                precision.append(precision_score(y[test], predictions, zero_division=1))
+                accuracy.append(ClassificationMetrics.accuracy_score(y[test], predictions))
+                recall.append(ClassificationMetrics.recall_score(y[test], predictions))
+                precision.append(ClassificationMetrics.precision_score(y[test], predictions))
 
             scores_df = scores_df.append(
                 Series(
