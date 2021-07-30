@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 from firecannon.services import BestParamsTestSuite
-from models import LogisticRegression
+from resources import LogisticRegression
 import glob
 import os
 

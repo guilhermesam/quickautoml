@@ -7,7 +7,7 @@ import pandas as pd
 import unittest
 
 from firecannon.services import ParameterizedTestSuite
-from .models import LogisticRegression
+from resources import LogisticRegression
 
 
 class ParametrizedTestTestCase(unittest.TestCase):
