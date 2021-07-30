@@ -24,7 +24,7 @@ class DataframeReport:
 
 class BarplotReport:
     @staticmethod
-    def make_report(data):
+    def make_report(data: dict):
         results = DataframeReport.make_report(data)
         mean_regexp = re.compile('mean[_]')
         mean_columns = [col for col in results.columns if bool(re.match(mean_regexp, col))]
