@@ -1,5 +1,7 @@
 from pandas import DataFrame
 from numpy import mean, std
+from matplotlib import pyplot as plt
+import re
 
 
 class DataframeReport:
@@ -22,8 +24,24 @@ class DataframeReport:
 
 class BarplotReport:
     @staticmethod
+    def __get_metrics(columns):
+        metrics = []
+        old_index = 0
+        for metric_range in range(2, len(columns) + 1, 2):
+            metrics.append(columns[old_index:metric_range])
+            old_index = metric_range
+        return metrics
+
+    @staticmethod
     def make_report(data):
         results = DataframeReport.make_report(data)
+        mean_regexp = re.compile('mean[_]')
+        mean_columns = [col for col in results.columns if bool(re.match(mean_regexp, col))]
 
-        for model in results.index:
-            print(results.loc[model])
+        for metric in mean_columns:
+            fig, _ = plt.subplots(figsize=(10, 8))
+            mean_metric = results.loc[:, metric]
+            plt.bar(mean_metric.index, mean_metric.values)
+            plt.grid(linestyle='dotted')
+            plt.title(mean_metric.name)
+            fig.savefig(f'{mean_metric.name}.png')
