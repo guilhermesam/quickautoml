@@ -2,8 +2,9 @@ from sklearn.datasets import make_classification
 from sklearn.neighbors import KNeighborsClassifier
 from os.path import isfile
 import unittest
+import numpy as np
 
-from firecannon.protocols import *
+from firecannon.services import BestParamsTestSuite
 from models import LogisticRegression
 import glob
 import os
