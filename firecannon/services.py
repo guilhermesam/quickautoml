@@ -1,11 +1,8 @@
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, KFold
-from pandas import DataFrame, Series
-
-import numpy as np
 
 from firecannon.utils import check_shape_compatibility, write_json, convert_to_np_array
 from firecannon.errors import IncompatibleDataShapeException, ProblemTypeNotSuppliedException
-from firecannon.presentation.reports import BarplotReport
+from firecannon.presentation.reports import BarplotReport, DataframeReport
 from firecannon.protocols.metrics import RegressionMetrics, ClassificationMetrics
 
 
@@ -92,10 +89,18 @@ class ParameterizedTestSuite:
         y = convert_to_np_array(y)
         kfold = self.__make_folds()
 
+        report_type = {
+            'dataframe': DataframeReport(),
+            'plot': BarplotReport()
+        }
+
         if self.problem_type == 'classification':
-            return self.__classification(x, y, models, kfold)
+            scores = self.__classification(x, y, models, kfold)
+            return report_type.get(self.report_type).make_report(scores)
+
         elif self.problem_type == 'regression':
-            return self.__regression(x, y, models, kfold)
+            scores = self.__regression(x, y, models, kfold)
+            return report_type.get(self.report_type).make_report(scores)
         else:
             raise ProblemTypeNotSuppliedException('Problem type must be passed (classification or regression)')
 
@@ -105,14 +110,8 @@ class ParameterizedTestSuite:
         else:
             return KFold(n_splits=self.k_folds)
 
-    def __make_report(self, *metrics_list: any) -> list:
-        scores = []
-        for metric in metrics_list:
-            scores.append(np.round(np.mean(metric), self.float_precision))
-            scores.append(np.round(np.std(metric), self.float_precision))
-        return scores
-
-    def __regression(self, x: any, y: any, models: list, kfold: any):
+    @staticmethod
+    def __regression(x: any, y: any, models: list, kfold: any) -> dict:
         scores = {}
 
         for model in models:
@@ -132,14 +131,11 @@ class ParameterizedTestSuite:
                 }
             })
 
-        return BarplotReport.make_report(scores)
+        return scores
 
-    def __classification(self, x: any, y: any, models: list, kfold: any) -> DataFrame:
-        scores_df = DataFrame(columns=[
-            'mean_accuracy', 'std_accuracy',
-            'mean_recall', 'std_recall',
-            'mean_precision', 'std_precision'
-        ])
+    @staticmethod
+    def __classification(x: any, y: any, models: list, kfold: any) -> dict:
+        scores = {}
 
         for model in models:
             accuracy = []
@@ -153,12 +149,12 @@ class ParameterizedTestSuite:
                 recall.append(ClassificationMetrics.recall_score(y[test], predictions))
                 precision.append(ClassificationMetrics.precision_score(y[test], predictions))
 
-            scores_df = scores_df.append(
-                Series(
-                    data=self.__make_report(accuracy, recall, precision),
-                    index=scores_df.columns,
-                    name=model.__class__.__name__
-                )
-            )
+            scores.update({
+                model.__class__.__name__: {
+                    'accuracy': accuracy,
+                    'precision': precision,
+                    'recall': recall
+                }
+            })
 
-        return scores_df
+        return scores

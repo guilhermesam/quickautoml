@@ -24,15 +24,6 @@ class DataframeReport:
 
 class BarplotReport:
     @staticmethod
-    def __get_metrics(columns):
-        metrics = []
-        old_index = 0
-        for metric_range in range(2, len(columns) + 1, 2):
-            metrics.append(columns[old_index:metric_range])
-            old_index = metric_range
-        return metrics
-
-    @staticmethod
     def make_report(data):
         results = DataframeReport.make_report(data)
         mean_regexp = re.compile('mean[_]')
