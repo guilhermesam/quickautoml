@@ -2,7 +2,7 @@ from sklearn.model_selection import StratifiedKFold, GridSearchCV, KFold
 
 from firecannon.utils import check_shape_compatibility, write_json, convert_to_np_array
 from firecannon.errors import IncompatibleDataShapeException, ProblemTypeNotSuppliedException
-from firecannon.presentation.reports import BarplotReport, DataframeReport
+from firecannon.presentation.reports import BarplotReport, DataframeReport, CsvReport
 from firecannon.protocols.metrics import RegressionMetrics, ClassificationMetrics
 
 
@@ -91,7 +91,8 @@ class ParameterizedTestSuite:
 
         report_type = {
             'dataframe': DataframeReport(),
-            'plot': BarplotReport()
+            'plot': BarplotReport(),
+            'csv': CsvReport()
         }
 
         if self.problem_type == 'classification':
