@@ -42,7 +42,8 @@ class BarplotReport(Report):
     def make_report(self, data: dict) -> None:
         results = DataFrame(
             data=self.get_metrics_data(data),
-            columns=self.get_columns_names(data)
+            columns=self.get_columns_names(data),
+            index=data.keys()
         )
         mean_regexp = re.compile('mean[_]')
         mean_columns = [col for col in results.columns if bool(re.match(mean_regexp, col))]
