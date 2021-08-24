@@ -1,7 +1,7 @@
 class ProblemTypeNotSuppliedException(Exception):
     """thrown when problem type (classification or regression) is not supplied"""
     def __str__(self):
-        return "pass 'classification' or 'regression' via test settings"
+        return f"pass 'classification' or 'regression' via test settings"
 
 
 class IncompatibleDataShapeException(Exception):
@@ -13,10 +13,3 @@ class IncompatibleDataShapeException(Exception):
 
     def __str__(self):
         return self.message
-
-
-class ModelNotFittedException(Exception):
-    """thrown when model is manipulated without being fitted"""
-
-    def __str__(self):
-        return 'run model.fit(X, y)'

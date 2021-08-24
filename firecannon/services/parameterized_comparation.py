@@ -68,24 +68,25 @@ class ParameterizedTestSuite:
         else:
             return KFold(n_splits=self.k_folds)
 
-    def __regression(self, x: any, y: any, models: list, kfold: any) -> dict:
+    @staticmethod
+    def __regression(x: any, y: any, models: list, kfold: any) -> dict:
         scores = {}
-        metrics = {
-            'mse': RegressionMetrics.mse,
-            'r2': RegressionMetrics.r2_score
-        }
 
         for model in models:
-            metric_values = []
-            current_metric = metrics.get(self.metric)
+            mse = []
+            r2 = []
 
             for train, test in kfold.split(x, y):
                 model.fit(x[train], y[train])
                 predictions = model.predict(x[test])
-                metric_values.append(current_metric(y[test], predictions))
+                mse.append(RegressionMetrics.mse(y[test], predictions))
+                r2.append(RegressionMetrics.r2_score(y[test], predictions))
 
             scores.update({
-                model: metric_values
+                model: {
+                    'r2': r2,
+                    'mse': mse
+                }
             })
 
         return scores
@@ -111,6 +112,7 @@ class ParameterizedTestSuite:
                 model: metric_values
             })
 
+        print(scores)
         return scores
 
     def get_best_model(self, scores):

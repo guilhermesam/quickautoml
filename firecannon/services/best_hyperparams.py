@@ -9,19 +9,14 @@ class BestParamsTestSuite:
     Class to find best hyperparameters for a list of entities
     """
 
-    def __init__(
-            self,
-            k_folds=4,
-            n_jobs=-1,
-            verbose=False,
-            output_path='NO_PATH',
-            scoring='accuracy'
-    ):
-        self.k_folds = k_folds
-        self.n_jobs = n_jobs
-        self.verbose = verbose
-        self.output_path = output_path
-        self.scoring = scoring
+    def __init__(self, test_settings=None):
+        if test_settings is None:
+            test_settings = {}
+        self.k_folds = test_settings.get('k_folds') or 4
+        self.n_jobs = test_settings.get('n_jobs') or -1
+        self.verbose = test_settings.get('verbose') or False
+        self.output_path = test_settings.get('output_path') or 'NO_PATH'
+        self.scoring = test_settings.get('scoring') or 'accuracy'
 
     def __str__(self):
         return f'k_folds: {self.k_folds}\n' \
@@ -42,7 +37,8 @@ class BestParamsTestSuite:
         grid_search.fit(X, y)
         best_params = grid_search.best_params_
         model.set_params(**best_params)
-        return {model: grid_search.best_score_}
+        return model
+
 
 """
     def run(self, x: any, y: any, model_parameters: dict) -> dict:

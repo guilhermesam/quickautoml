@@ -1,4 +1,0 @@
-agaricus_lepiota in model: 1.0
-agaricus_lepiota in baseline: 0.8891375226290059
-sonar in model: 0.7884615384615384
-sonar in baseline: 0.7932692307692307
