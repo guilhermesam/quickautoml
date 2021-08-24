@@ -8,7 +8,7 @@ setup(
     version='0.0.1',
     author='Wabbajack',
     packages=find_packages(include=['firecannon']),
-    description='Quick tests for supervised machine learning entities',
+    description='Quick tests for supervised machine learning models',
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='MIT',
