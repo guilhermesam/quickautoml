@@ -12,15 +12,19 @@ class ParameterizedTestSuite:
     Class to test entities with tuned hyperparameters
     """
 
-    def __init__(self, test_settings: dict = None):
-        if test_settings is None:
-            self.test_settings = {}
-        self.problem_type = test_settings.get('problem_type')
-        self.k_folds = test_settings.get('k_folds') or 4
-        self.stratify = test_settings.get('stratify') or False
-        self.float_precision = test_settings.get('float_precision') or 3
-        self.report_type = test_settings.get('report_type') or 'dataframe'
-        self.metric = test_settings.get('metric') or 'accuracy'
+    def __init__(self, problem_type,
+                 k_folds,
+                 stratify,
+                 float_precision,
+                 metric,
+                 ):
+        self.problem_type = problem_type
+        self.k_folds = k_folds
+        self.stratify = stratify
+        self.float_precision = float_precision
+        self.metric = metric
+        self.best_model = None
+        self.__scores = {}
 
     def __str__(self):
         return f'k_folds: {self.k_folds}\n' \
@@ -58,7 +62,8 @@ class ParameterizedTestSuite:
 
         elif self.problem_type == 'regression':
             scores = self.__regression(x, y, models, kfold)
-            return report_type.get(self.report_type).make_report(scores)
+            return scores
+            # return report_type.get(self.report_type).make_report(scores)
         else:
             raise ProblemTypeNotSuppliedException('Problem type must be passed (classification or regression)')
 
@@ -68,25 +73,24 @@ class ParameterizedTestSuite:
         else:
             return KFold(n_splits=self.k_folds)
 
-    @staticmethod
-    def __regression(x: any, y: any, models: list, kfold: any) -> dict:
+    def __regression(self, x: any, y: any, models: list, kfold: any) -> dict:
         scores = {}
+        metrics = {
+            'mse': RegressionMetrics.mse,
+            'r2_score': RegressionMetrics.r2_score
+        }
+        current_metric = metrics.get(self.metric)
 
         for model in models:
-            mse = []
-            r2 = []
+            metrics_for_fold = []
 
             for train, test in kfold.split(x, y):
                 model.fit(x[train], y[train])
                 predictions = model.predict(x[test])
-                mse.append(RegressionMetrics.mse(y[test], predictions))
-                r2.append(RegressionMetrics.r2_score(y[test], predictions))
+                metrics_for_fold.append(current_metric(y[test], predictions))
 
             scores.update({
-                model: {
-                    'r2': r2,
-                    'mse': mse
-                }
+                model: mean(metrics_for_fold)
             })
 
         return scores
@@ -98,26 +102,20 @@ class ParameterizedTestSuite:
             'recall': ClassificationMetrics.recall_score,
             'precision': ClassificationMetrics.precision_score
         }
+        current_metric = metrics.get(self.metric)
 
         for model in models:
-            metric_values = []
-            current_metric = metrics.get(self.metric)
+            metrics_for_fold = []
 
             for train, test in kfold.split(x, y):
                 model.fit(x[train], y[train])
                 predictions = model.predict(x[test])
-                metric_values.append(current_metric(y[test], predictions))
+                metrics_for_fold.append(current_metric(y[test], predictions))
 
             scores.update({
-                model: metric_values
+                model: mean(metrics_for_fold)
             })
 
-        print(scores)
         return scores
 
-    def get_best_model(self, scores):
-        models_by_metric = {}
-        for model, param in scores.items():
-            models_by_metric.update({model: mean(param)})
 
-        return max(models_by_metric, key=models_by_metric.get)

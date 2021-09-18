@@ -17,3 +17,6 @@ build
 dist
 firecannon.egg-info
 *.pyc
+
+# Experiment
+tests/experiment
