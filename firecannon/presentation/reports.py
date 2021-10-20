@@ -1,18 +1,20 @@
-from pandas import DataFrame
+from pandas import Series, DataFrame
 from numpy import mean, std
 from matplotlib import pyplot as plt
-import re
 import csv
 
 
 class Report:
-    def get_columns_names(self, data):
+    @staticmethod
+    def get_columns_names(data):
         metric_names = list(data.values())[0].keys()
         columns = []
         [columns.extend([f'mean_{metric}', f'std_{metric}']) for metric in metric_names]
         return columns
 
-    def get_metrics_data(self, data):
+    @staticmethod
+    def get_metrics_data(data):
+        print(data)
         structured_data = []
         for model_metrics in data.values():
             metrics = []
@@ -39,22 +41,22 @@ class DataframeReport(Report):
 
 
 class BarplotReport(Report):
-    def make_report(self, data: dict) -> None:
-        results = DataFrame(
-            data=self.get_metrics_data(data),
-            columns=self.get_columns_names(data),
+    @staticmethod
+    def make_report(data: dict) -> None:
+        results = Series(
+            data=data.values(),
             index=data.keys()
         )
-        mean_regexp = re.compile('mean[_]')
-        mean_columns = [col for col in results.columns if bool(re.match(mean_regexp, col))]
+        # mean_regexp = re.compile('mean[_]')
+        # mean_columns = [col for col in results.columns if bool(re.match(mean_regexp, col))]
 
-        for metric in mean_columns:
-            fig, _ = plt.subplots(figsize=(10, 8))
-            mean_metric = results.loc[:, metric]
-            plt.bar(mean_metric.index, mean_metric.values)
-            plt.grid(linestyle='dotted')
-            plt.title(mean_metric.name)
-            fig.savefig(f'{mean_metric.name}.png')
+        print(results)
+
+        fig, _ = plt.subplots(figsize=(10, 8))
+        plt.bar([x.__class__.__name__ for x in results.index], results.values)
+        plt.grid(linestyle='dotted')
+        plt.title('XD')
+        fig.savefig('models.png')
 
 
 class CsvReport(Report):
