@@ -15,7 +15,7 @@ class BaseModelAgg:
         self.random_state = 777
         self.verbose = False
         self.scoring = None
-        self.__best_model = None
+        self.best_model = None
         self.report_type = report_type
         self.__fitted = False
 
@@ -37,7 +37,7 @@ class BaseModelAgg:
         report_types.get(report_type).make_report(scores)
 
     def get_best_model(self):
-        return self.__best_model.__str__()
+        return self.best_model
 
     @staticmethod
     def __extract_best_model(scores):
@@ -84,11 +84,10 @@ class Regressor(BaseModelAgg):
             best_model = best_hyperparams_test.run(X, y, {model: params})
             best_models.update(best_model)
 
-        return self.__extract_best_model(best_models)
+        self.best_model = self.__extract_best_model(best_models)
 
     def predict(self, X_test):
-        best_model = self.__best_model
-        return best_model.predict(X_test)
+        return self.best_model.predict(X_test)
 
 
 class Classifier(BaseModelAgg):
@@ -141,11 +140,11 @@ class Classifier(BaseModelAgg):
             best_model = best_hyperparams_test.run(X, y, {model: params})
             scores.update(best_model)
 
-        self.__best_model = self.__extract_best_model(scores)
+        self.best_model = self.__extract_best_model(scores)
 
         if self.report_type:
             self.make_report(self.report_type, scores)
 
     def predict(self, y):
-        best_model = self.__best_model
-        return best_model.predict(y)
+        return self.best_model.predict(y)
+
