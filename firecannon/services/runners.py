@@ -1,6 +1,5 @@
 from numpy import mean
 
-from firecannon.protocols.metrics import Metrics
 from firecannon.services.best_hyperparams import BestParamsTestSuite
 from firecannon.adapters import sklearn_models_adapters
 from firecannon.presentation.reports import BarplotReport, CsvReport, DataframeReport
@@ -10,13 +9,13 @@ class BaseModelAgg:
     def __init__(self, metric: str, report_type: str = None, models_settings: str = None) -> None:
         if models_settings is None:
             models_settings = {}
-        self.metric = self.__get_metric(metric)
+        self.metric = metric
         self.k_folds = 5
         self.n_jobs = -1
         self.random_state = 777
         self.verbose = False
         self.scoring = None
-        self.best_model = None
+        self.__best_model = None
         self.report_type = report_type
         self.__fitted = False
 
@@ -29,17 +28,6 @@ class BaseModelAgg:
         pass
 
     @staticmethod
-    def __get_metric(metric: str):
-        current_metrics = {
-            'mse': Metrics.mse,
-            'r2': Metrics.r2,
-            'accuracy': Metrics.accuracy,
-            'precision': Metrics.precision,
-            'recall': Metrics.recall
-        }
-        return current_metrics.get(metric)
-
-    @staticmethod
     def make_report(report_type: str, scores: dict):
         report_types = {
             'dataframe': DataframeReport(),
@@ -49,7 +37,7 @@ class BaseModelAgg:
         report_types.get(report_type).make_report(scores)
 
     def get_best_model(self):
-        return self.best_model.__str__()
+        return self.__best_model.__str__()
 
     @staticmethod
     def __extract_best_model(scores):
@@ -96,23 +84,19 @@ class Regressor(BaseModelAgg):
             best_model = best_hyperparams_test.run(X, y, {model: params})
             best_models.update(best_model)
 
-        self.best_model = self.__extract_best_model(best_models)
-
-        return self.best_model
+        return self.__extract_best_model(best_models)
 
     def predict(self, X_test):
-        best_model = self.best_model
+        best_model = self.__best_model
         return best_model.predict(X_test)
 
 
 class Classifier(BaseModelAgg):
-    def __init__(self, metric: str,
+    def __init__(self, metric: str = 'accuracy',
                  report_type: str = None,
-                 models_settings: dict = None,
-                 scoring: str = 'accuracy') -> None:
+                 models_settings: dict = None
+                 ) -> None:
         super().__init__(metric, models_settings, report_type)
-        self.scoring = scoring
-        self.report_type = report_type
         if not models_settings:
             self.__default_models_config()
         else:
@@ -149,7 +133,7 @@ class Classifier(BaseModelAgg):
             k_folds=self.k_folds,
             n_jobs=self.n_jobs,
             verbose=self.verbose,
-            scoring=self.scoring
+            scoring=self.metric
         )
 
         scores = {}
@@ -157,25 +141,11 @@ class Classifier(BaseModelAgg):
             best_model = best_hyperparams_test.run(X, y, {model: params})
             scores.update(best_model)
 
-        print('scores:', scores)
-        self.best_model = self.__extract_best_model(scores)
-        self.make_report(self.report_type, scores)
+        self.__best_model = self.__extract_best_model(scores)
 
-        return self.best_model
+        if self.report_type:
+            self.make_report(self.report_type, scores)
 
     def predict(self, y):
-        best_model = self.best_model
+        best_model = self.__best_model
         return best_model.predict(y)
-
-
-from firecannon.adapters.metrics_adapters import SKLearnMetrics
-from sklearn.datasets import make_classification
-
-X, y = make_classification(n_samples=100, n_features=5, n_classes=2)
-
-c = Classifier(
-    'accuracy',
-    report_type='plot'
-)
-
-c.fit(X, y)

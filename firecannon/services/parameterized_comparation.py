@@ -4,7 +4,7 @@ from numpy import mean
 from firecannon.utils import check_shape_compatibility, convert_to_np_array
 from firecannon.errors import IncompatibleDataShapeException, ProblemTypeNotSuppliedException
 from firecannon.presentation.reports import BarplotReport, DataframeReport, CsvReport
-from firecannon.protocols.metrics import RegressionMetrics, ClassificationMetrics
+from firecannon.infra.metrics_adapters import RegressionMetrics, ClassificationMetrics
 
 
 class ParameterizedTestSuite:
