@@ -1,28 +1,21 @@
 from numpy import mean
+from firecannon.adapters.metrics_adapters import SKLearnMetrics
 
 from firecannon.services.best_hyperparams import BestParamsTestSuite
 from firecannon.adapters import sklearn_models_adapters
-from firecannon.presentation.reports import BarplotReport, CsvReport, DataframeReport
+from firecannon.reports import BarplotReport, CsvReport, DataframeReport
 
 
 class BaseModelAgg:
     def __init__(self, metric: str, report_type: str = None, models_settings: str = None) -> None:
-        if models_settings is None:
-            models_settings = {}
         self.metric = metric
         self.k_folds = 5
         self.n_jobs = -1
         self.random_state = 777
         self.verbose = False
-        self.scoring = None
         self.best_model = None
         self.report_type = report_type
         self.__fitted = False
-
-        if not models_settings:
-            self.__default_models_config()
-        else:
-            self.model_settings = models_settings
 
     def __default_models_config(self):
         pass
@@ -39,6 +32,7 @@ class BaseModelAgg:
     def get_best_model(self):
         return self.best_model
 
+
     @staticmethod
     def __extract_best_model(scores):
         models_by_metric = {}
@@ -49,9 +43,11 @@ class BaseModelAgg:
 
 
 class Regressor(BaseModelAgg):
-    def __init__(self, metric: str, models_settings: dict = None, scoring: str = 'neg_mean_squared_error') -> None:
-        super().__init__(metric, models_settings)
-        self.scoring = scoring
+    def __init__(self, metric: str = 'r2',
+                report_type: str = None,
+                models_settings: dict = None
+                ) -> None:
+        super().__init__(metric, models_settings, report_type)
 
     def __default_models_config(self):
         self.model_settings = {
@@ -96,13 +92,10 @@ class Classifier(BaseModelAgg):
                  models_settings: dict = None
                  ) -> None:
         super().__init__(metric, models_settings, report_type)
-        if not models_settings:
-            self.__default_models_config()
-        else:
-            self.model_settings = models_settings
+        self.model_settings = self.__default_models_config() if not models_settings else models_settings
 
     def __default_models_config(self):
-        self.model_settings = {
+        return {
             sklearn_models_adapters.KNeighborsClassifier(): {
                 'n_neighbors': [3, 5, 7],
                 'leaf_size': [15, 30, 45, 60],
@@ -127,6 +120,7 @@ class Classifier(BaseModelAgg):
 
         return max(models_by_metric, key=models_by_metric.get)
 
+
     def fit(self, X, y):
         best_hyperparams_test = BestParamsTestSuite(
             k_folds=self.k_folds,
@@ -148,3 +142,11 @@ class Classifier(BaseModelAgg):
     def predict(self, y):
         return self.best_model.predict(y)
 
+
+from sklearn.datasets import make_classification
+
+X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
+
+c = Classifier()
+c.fit(X_c, y_c)
+print(c.best_model)
