@@ -41,34 +41,3 @@ class BestParamsTestSuite:
         return {
             grid_search.best_estimator_: grid_search.best_score_
         }
-
-
-"""
-    def run(self, x: any, y: any, model_parameters: dict) -> dict:
-        x: any implementation of 2D matrix with features for training
-        y: any implementation of 2D matrix with labels
-        model_parameters: dict, which keys are instantiated entities and values are lists with hyperparameter
-        if not check_shape_compatibility(x, y):
-            raise IncompatibleDataShapeException(x.shape[0], y.shape[0])
-
-        best_models = {}
-
-        for model in model_parameters.keys():
-            grid_search = GridSearchCV(estimator=model,
-                                       param_grid=model_parameters.get(model),
-                                       cv=self.k_folds,
-                                       n_jobs=self.n_jobs,
-                                       scoring=self.scoring or model.score)
-            grid_search.fit(x, y)
-            best_params = grid_search.best_params_
-
-            best_models.update({model.__class__.__name__: best_params})
-
-            if self.verbose:
-                print(f'Best params for {model.__class__.__name__}: {best_params}')
-
-        if self.output_path != 'NO_PATH':
-            write_json(data=best_models, filepath=self.output_path)
-
-        return best_models
-"""
