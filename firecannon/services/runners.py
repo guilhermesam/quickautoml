@@ -19,16 +19,19 @@ class BaseModelAgg:
         self.verbose = False
         self.best_model = None
         self.report_type = report_type
-        self.__fitted = False
+        self.__valid_report_types = [
+            'plot', 'csv', 'json'
+        ]
 
     @abstractmethod
     def _default_models_config(self):
         pass
 
-    @staticmethod
-    def make_report(report_type: str, scores: dict):
+    def make_report(self, report_type: str, scores: dict):
+        if report_type not in self.__valid_report_types:
+            raise ValueError('Defina um método de relatório válido (\'plot\' para gerar ' +
+            'um gráfico ou \'csv\' para gerar uma planilha)')
         report_types = {
-            'dataframe': DataframeReport(),
             'plot': BarplotReport(),
             'csv': CsvReport()
         }
@@ -146,5 +149,5 @@ from sklearn.datasets import make_classification
 
 X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
 
-c = Classifier(report_type='plot')
+c = Classifier(report_type='pltot')
 c.fit(X_c, y_c)
