@@ -58,6 +58,14 @@ Firecannon foi construído de forma a fornecer uma abstração de alto nível de
 	}
 	```
 
+* **report_type: str, default=None**: Caso um valor seja fornecido, define o método de geração de relatórios, que contém os resultados do processo de treinamento e validação dos modelos. Valores possíveis são 'csv', que resulta na criação de um arquivo .csv contendo os resultados de cada modelo em formato tabular, 'plot' que retorna os resultados em formato de um gráfico de barras e 'json', que retorna os resultados em um formato json, semelhante a um dicionário.
+
+* **k_folds: int, default=5**: Controla o número de folds usados para executar o processo de validação cruzada, no ajuste por hiperparâmetros. Valores muito altos (> 10) tendem a fazer com que uma porcentagem muito pequena dos dados sejam utilizados para teste em cada etapa da validação cruzada.
+
+* **n_jobs: int, default=-1**: Define o número de jobs que serão executados em paralelo. O valor default -1 significa que todos os processadores serão utilizados nessa tarefa.
+
+* **random_state: int, default=777**: Define a semente que será utilizada para a geração dos números pseudo-aleatórios empregados no processo de treinamento e seleção de modelos. Mantido com o objetivo de reduzir a aleatoriedade dos experimentos.
+
 ### Encontrando os melhores hiperparâmetros
 O teste para obtenção dos melhores hiperparâmetros é feito pela classe BestParamsTestSuite, que recebe como parâmetro no construtor um dicionário, com as configurações do teste:
 
