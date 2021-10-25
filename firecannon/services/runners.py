@@ -1,14 +1,18 @@
 from numpy import mean
-from firecannon.adapters.metrics_adapters import SKLearnMetrics
+from abc import ABC, abstractmethod
 
 from firecannon.services.best_hyperparams import BestParamsTestSuite
-from firecannon.adapters import sklearn_models_adapters
+from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
 from firecannon.reports import BarplotReport, CsvReport, DataframeReport
 
 
 class BaseModelAgg:
-    def __init__(self, metric: str, report_type: str = None, models_settings: str = None) -> None:
+    def __init__(self, metric: str, 
+                    report_type: str = None,
+                    models_settings: str = None,
+                    models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
         self.metric = metric
+        self._models_supplier = models_supplier
         self.k_folds = 5
         self.n_jobs = -1
         self.random_state = 777
@@ -17,7 +21,8 @@ class BaseModelAgg:
         self.report_type = report_type
         self.__fitted = False
 
-    def __default_models_config(self):
+    @abstractmethod
+    def _default_models_config(self):
         pass
 
     @staticmethod
@@ -34,7 +39,7 @@ class BaseModelAgg:
 
 
     @staticmethod
-    def __extract_best_model(scores):
+    def _extract_best_model(scores):
         models_by_metric = {}
         for model, param in scores.items():
             models_by_metric.update({model: mean(param)})
@@ -43,25 +48,26 @@ class BaseModelAgg:
 
 
 class Regressor(BaseModelAgg):
-    def __init__(self, metric: str = 'r2',
-                report_type: str = None,
-                models_settings: dict = None
+    def __init__(self, report_type: str,
+                models_settings: dict,
+                models_supplier: list,
+                metric: str = 'r2'
                 ) -> None:
         super().__init__(metric, models_settings, report_type)
 
     def __default_models_config(self):
         self.model_settings = {
-            sklearn_models_adapters.RandomForestRegressor: {
+            self._models_supplier.RandomForestRegressor: {
                 'n_estimators': [50, 100, 150],
                 'criterion': ['mse', 'mae'],
                 'max_features': ['auto', 'log2', 'sqrt'],
             },
-            sklearn_models_adapters.Lasso: {
+            self._models_supplier.Lasso: {
                 'alpha': [1.0, 1.5, 2.0],
                 'fit_intercept': [True, False],
                 'normalize': [True, False]
             },
-            sklearn_models_adapters.ElasticNet: {
+            self._models_supplier.ElasticNet: {
                 'alpha': [1.0, 1.5, 2.0],
                 'fit_intercept': [True, False],
                 'normalize': [True, False]
@@ -80,7 +86,7 @@ class Regressor(BaseModelAgg):
             best_model = best_hyperparams_test.run(X, y, {model: params})
             best_models.update(best_model)
 
-        self.best_model = self.__extract_best_model(best_models)
+        self.best_model = self._extract_best_model(best_models)
 
     def predict(self, X_test):
         return self.best_model.predict(X_test)
@@ -92,34 +98,26 @@ class Classifier(BaseModelAgg):
                  models_settings: dict = None
                  ) -> None:
         super().__init__(metric, models_settings, report_type)
-        self.model_settings = self.__default_models_config() if not models_settings else models_settings
+        self.report_type = report_type
+        self.model_settings = self._default_models_config() if not models_settings else models_settings
 
-    def __default_models_config(self):
+    def _default_models_config(self):
         return {
-            sklearn_models_adapters.KNeighborsClassifier(): {
+            self._models_supplier.get_model('knn-c'): {
                 'n_neighbors': [3, 5, 7],
                 'leaf_size': [15, 30, 45, 60],
                 'weights': ['uniform', 'distance']
             },
-            sklearn_models_adapters.RandomForestClassifier(): {
+            self._models_supplier.get_model('rf-c'): {
                 'n_estimators': [50, 100, 150],
                 'criterion': ['gini', 'entropy'],
                 'max_features': ['auto', 'log2', 'sqrt'],
             },
-            sklearn_models_adapters.AdaBoostClassifier(): {
+            self._models_supplier.get_model('ada-c'): {
                 'n_estimators': [50, 100, 150],
                 'learning_rate': [1, 0.1, 0.5]
             }
         }
-
-    @staticmethod
-    def __extract_best_model(scores):
-        models_by_metric = {}
-        for model, param in scores.items():
-            models_by_metric.update({model: mean(param)})
-
-        return max(models_by_metric, key=models_by_metric.get)
-
 
     def fit(self, X, y):
         best_hyperparams_test = BestParamsTestSuite(
@@ -130,13 +128,14 @@ class Classifier(BaseModelAgg):
         )
 
         scores = {}
+
         for model, params in self.model_settings.items():
-            best_model = best_hyperparams_test.run(X, y, {model: params})
+            best_model = best_hyperparams_test.run(X, y, model, params)
             scores.update(best_model)
 
-        self.best_model = self.__extract_best_model(scores)
+        self.best_model = self._extract_best_model(scores)
 
-        if self.report_type:
+        if self.report_type is not None:
             self.make_report(self.report_type, scores)
 
     def predict(self, y):
@@ -147,6 +146,5 @@ from sklearn.datasets import make_classification
 
 X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
 
-c = Classifier()
+c = Classifier(report_type='plot')
 c.fit(X_c, y_c)
-print(c.best_model)

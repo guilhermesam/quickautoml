@@ -14,7 +14,6 @@ class Report:
 
     @staticmethod
     def get_metrics_data(data):
-        print(data)
         structured_data = []
         for model_metrics in data.values():
             metrics = []
@@ -36,7 +35,6 @@ class DataframeReport(Report):
             scores_df.loc[len(scores_df)] = metrics
 
         scores_df.index = data.keys()
-        print(scores_df)
         return scores_df
 
 
@@ -50,12 +48,10 @@ class BarplotReport(Report):
         # mean_regexp = re.compile('mean[_]')
         # mean_columns = [col for col in results.columns if bool(re.match(mean_regexp, col))]
 
-        print(results)
-
         fig, _ = plt.subplots(figsize=(10, 8))
         plt.bar([x.__class__.__name__ for x in results.index], results.values)
         plt.grid(linestyle='dotted')
-        plt.title('XD')
+        plt.title('Models Comparison')
         fig.savefig('models.png')
 
 

@@ -6,6 +6,7 @@ venv
 # Generated Files
 best_models.json
 *.json
+*.png
 
 # Personal Files
 firecannon/TODO

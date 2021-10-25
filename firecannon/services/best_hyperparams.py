@@ -26,13 +26,12 @@ class BestParamsTestSuite:
                f'verbose: {self.verbose}\n' \
                f'scoring: {self.scoring}'
 
-    def run(self, X: any, y: any, model_settings: any):
+    def run(self, X: any, y: any, model: any, model_settings: dict):
         if not check_shape_compatibility(X, y):
             raise IncompatibleDataShapeException(X.shape[0], y.shape[0])
 
-        model = list(model_settings.keys())[0]
         grid_search = GridSearchCV(estimator=model,
-                                   param_grid=model_settings.get(model),
+                                   param_grid=model_settings,
                                    cv=self.k_folds,
                                    n_jobs=self.n_jobs,
                                    scoring=self.scoring or model.score)
