@@ -1,7 +1,8 @@
 from sklearn.model_selection import GridSearchCV
 
-from firecannon.utils import check_shape_compatibility, write_json
+from firecannon.utils import check_shape_compatibility
 from firecannon.errors import IncompatibleDataShapeException
+from firecannon.entities import Model
 
 
 class BestParamsTestSuite:
@@ -38,6 +39,6 @@ class BestParamsTestSuite:
                                    scoring=self.scoring or model.score)
         grid_search.fit(X, y)
 
-        return {
-            grid_search.best_estimator_: grid_search.best_score_
-        }
+        return Model(
+            grid_search.best_estimator_, grid_search.best_score_
+        )

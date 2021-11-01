@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from firecannon.entities import Model
 from firecannon.services.best_hyperparams import BestParamsTestSuite
 from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
 from firecannon.reports import BarplotReport, CsvReport, JsonReport
@@ -25,6 +26,10 @@ class BaseModel:
         ]
         self.model_settings = self._default_models_config() if not models_settings else models_settings
 
+    @abstractmethod
+    def _default_models_config(self):
+        pass
+
     def fit(self, X, y) -> None:
         best_hyperparams_finder = BestParamsTestSuite(
             k_folds=self.k_folds,
@@ -36,24 +41,19 @@ class BaseModel:
         scores = {}
 
         for model, params in self.model_settings.items():
-            best_model = best_hyperparams_finder.run(X, y, model, params)
-            if list(best_model.values())[0] > self.metric_threshold:
+            best_model: Model = best_hyperparams_finder.run(X, y, model, params)
+            scores.update({best_model.name: best_model.score})
+            if best_model.score > self.metric_threshold:
                 self.best_model = best_model
                 break   
-            else:
-                scores.update(best_model)
         else:
             self.best_model = self._extract_best_model(scores)
 
         if self.__conditions_to_make_report():
             self.make_report(self.report_type, scores)
 
-    def predict(self, y):
-        return self.best_model.predict(y)
-
-    @abstractmethod
-    def _default_models_config(self):
-        pass
+    def predict(self, X):
+        return self.best_model.predict(X)
 
     def __conditions_to_make_report(self) -> bool:
         return self.report_type and (self.report_type in self.__valid_report_types)
@@ -66,19 +66,16 @@ class BaseModel:
         }
         report_types.get(report_type).make_report(scores)
 
-    def get_best_model(self):
-        return self.best_model
-
     @staticmethod
     def _extract_best_model(scores):
         return max(scores, key=scores.get)
 
 
 class Regressor(BaseModel):
-    def __init__(self, report_type: str,
-                models_settings: dict,
-                models_supplier: list,
-                metric: str = 'r2'
+    def __init__(self, 
+                metric: str = 'r2',
+                report_type: str = None,
+                models_settings: dict = None
                 ) -> None:
         super().__init__(metric, models_settings, report_type)
 
@@ -128,10 +125,3 @@ class Classifier(BaseModel):
                 'learning_rate': [1, 0.1, 0.5]
             }
         }
-
-from sklearn.datasets import make_classification
-
-X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
-
-c = Classifier(report_type='json')
-c.fit(X_c, y_c)
