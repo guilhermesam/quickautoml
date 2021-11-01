@@ -1,10 +1,14 @@
 from pandas import Series, DataFrame
 from numpy import mean, std
 from matplotlib import pyplot as plt
-import csv
+from csv import writer
+from json import dump
 
 
 class Report:
+    def make_report(self, data: dict):
+        raise NotImplementedError()
+
     @staticmethod
     def get_columns_names(data):
         metric_names = list(data.values())[0].keys()
@@ -21,6 +25,13 @@ class Report:
                 metrics.extend([mean(metric), std(metric)])
             structured_data.append(metrics)
         return structured_data
+
+
+class JsonReport(Report):
+    def make_report(self, data: dict):
+        with open('models.json', 'w') as models_output:
+            processed_dict = {key.__class__.__name__: value for key, value in data.items()}
+            dump(processed_dict, models_output)
 
 
 class DataframeReport(Report):
@@ -45,8 +56,6 @@ class BarplotReport(Report):
             data=data.values(),
             index=data.keys()
         )
-        # mean_regexp = re.compile('mean[_]')
-        # mean_columns = [col for col in results.columns if bool(re.match(mean_regexp, col))]
 
         fig, _ = plt.subplots(figsize=(10, 8))
         plt.bar([x.__class__.__name__ for x in results.index], results.values)
@@ -58,11 +67,11 @@ class BarplotReport(Report):
 class CsvReport(Report):
     def make_report(self, data: dict) -> None:
         with open('evaluation_results.csv', 'w', encoding='UTF8', newline='') as file:
-            writer = csv.writer(file)
+            csv_writer = writer(file)
             columns = self.get_columns_names(data)
-            writer.writerow(columns)
+            csv_writer.writerow(columns)
 
             for row in self.get_metrics_data(data):
-                writer.writerow(row)
+                csv_writer.writerow(row)
 
         file.close()

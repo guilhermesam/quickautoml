@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from firecannon.services.best_hyperparams import BestParamsTestSuite
 from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
-from firecannon.reports import BarplotReport, CsvReport, DataframeReport
+from firecannon.reports import BarplotReport, CsvReport, JsonReport
 
 
 class BaseModel:
@@ -55,7 +55,8 @@ class BaseModel:
     def make_report(self, report_type: str, scores: dict):
         report_types = {
             'plot': BarplotReport(),
-            'csv': CsvReport()
+            'csv': CsvReport(),
+            'json': JsonReport()
         }
         report_types.get(report_type).make_report(scores)
 
