@@ -1,4 +1,3 @@
-from numpy import mean
 from abc import ABC, abstractmethod
 
 from firecannon.services.best_hyperparams import BestParamsTestSuite
@@ -6,7 +5,7 @@ from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSup
 from firecannon.reports import BarplotReport, CsvReport, DataframeReport
 
 
-class BaseModelAgg:
+class BaseModel:
     def __init__(self, metric: str, 
                     report_type: str = None,
                     models_settings: str = None,
@@ -22,15 +21,38 @@ class BaseModelAgg:
         self.__valid_report_types = [
             'plot', 'csv', 'json'
         ]
+        self.model_settings = self._default_models_config() if not models_settings else models_settings
+
+    def fit(self, X, y) -> None:
+        best_hyperparams_finder = BestParamsTestSuite(
+            k_folds=self.k_folds,
+            n_jobs=self.n_jobs,
+            verbose=self.verbose,
+            scoring=self.metric
+        )
+
+        scores = {}
+
+        for model, params in self.model_settings.items():
+            best_model = best_hyperparams_finder.run(X, y, model, params)
+            scores.update(best_model)
+
+        self.best_model = self._extract_best_model(scores)
+
+        if self.__conditions_to_make_report():
+            self.make_report(self.report_type, scores)
+
+    def predict(self, y):
+        return self.best_model.predict(y)
 
     @abstractmethod
     def _default_models_config(self):
         pass
 
+    def __conditions_to_make_report(self) -> bool:
+        return self.report_type and (self.report_type in self.__valid_report_types)
+
     def make_report(self, report_type: str, scores: dict):
-        if report_type not in self.__valid_report_types:
-            raise ValueError('Defina um método de relatório válido (\'plot\' para gerar ' +
-            'um gráfico ou \'csv\' para gerar uma planilha)')
         report_types = {
             'plot': BarplotReport(),
             'csv': CsvReport()
@@ -40,17 +62,12 @@ class BaseModelAgg:
     def get_best_model(self):
         return self.best_model
 
-
     @staticmethod
     def _extract_best_model(scores):
-        models_by_metric = {}
-        for model, param in scores.items():
-            models_by_metric.update({model: mean(param)})
-
-        return max(models_by_metric, key=models_by_metric.get)
+        return max(scores, key=scores.get)
 
 
-class Regressor(BaseModelAgg):
+class Regressor(BaseModel):
     def __init__(self, report_type: str,
                 models_settings: dict,
                 models_supplier: list,
@@ -77,32 +94,15 @@ class Regressor(BaseModelAgg):
             }
         }
 
-    def fit(self, X, y):
-        best_hyperparams_test = BestParamsTestSuite(
-            k_folds=self.k_folds,
-            n_jobs=self.n_jobs,
-            verbose=self.verbose,
-            scoring=self.scoring
-        )
-        best_models = {}
-        for model, params in self.model_settings.items():
-            best_model = best_hyperparams_test.run(X, y, {model: params})
-            best_models.update(best_model)
 
-        self.best_model = self._extract_best_model(best_models)
-
-    def predict(self, X_test):
-        return self.best_model.predict(X_test)
-
-
-class Classifier(BaseModelAgg):
-    def __init__(self, metric: str = 'accuracy',
-                 report_type: str = None,
-                 models_settings: dict = None
-                 ) -> None:
-        super().__init__(metric, models_settings, report_type)
+class Classifier(BaseModel):
+    def __init__(self, 
+                metric: str = 'accuracy',
+                report_type: str = None,
+                models_settings: dict = None
+                ) -> None:
+        super().__init__(metric, report_type, models_settings)
         self.report_type = report_type
-        self.model_settings = self._default_models_config() if not models_settings else models_settings
 
     def _default_models_config(self):
         return {
@@ -121,33 +121,3 @@ class Classifier(BaseModelAgg):
                 'learning_rate': [1, 0.1, 0.5]
             }
         }
-
-    def fit(self, X, y):
-        best_hyperparams_test = BestParamsTestSuite(
-            k_folds=self.k_folds,
-            n_jobs=self.n_jobs,
-            verbose=self.verbose,
-            scoring=self.metric
-        )
-
-        scores = {}
-
-        for model, params in self.model_settings.items():
-            best_model = best_hyperparams_test.run(X, y, model, params)
-            scores.update(best_model)
-
-        self.best_model = self._extract_best_model(scores)
-
-        if self.report_type is not None:
-            self.make_report(self.report_type, scores)
-
-    def predict(self, y):
-        return self.best_model.predict(y)
-
-
-from sklearn.datasets import make_classification
-
-X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
-
-c = Classifier(report_type='pltot')
-c.fit(X_c, y_c)
