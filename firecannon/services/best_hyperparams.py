@@ -33,6 +33,7 @@ class BestParamsTestSuite:
         grid_search = GridSearchCV(estimator=model,
                                    param_grid=model_settings,
                                    cv=self.k_folds,
+                                   verbose=self.verbose,
                                    n_jobs=self.n_jobs,
                                    scoring=self.scoring or model.score)
         grid_search.fit(X, y)

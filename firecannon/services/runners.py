@@ -9,15 +9,17 @@ class BaseModel:
     def __init__(self, metric: str, 
                     report_type: str = None,
                     models_settings: str = None,
+                    metric_threshold: float = 0.80,
                     models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
         self.metric = metric
+        self.report_type = report_type
         self._models_supplier = models_supplier
         self.k_folds = 5
         self.n_jobs = -1
         self.random_state = 777
         self.verbose = False
         self.best_model = None
-        self.report_type = report_type
+        self.metric_threshold = metric_threshold
         self.__valid_report_types = [
             'plot', 'csv', 'json'
         ]
@@ -35,9 +37,13 @@ class BaseModel:
 
         for model, params in self.model_settings.items():
             best_model = best_hyperparams_finder.run(X, y, model, params)
-            scores.update(best_model)
-
-        self.best_model = self._extract_best_model(scores)
+            if list(best_model.values())[0] > self.metric_threshold:
+                self.best_model = best_model
+                break   
+            else:
+                scores.update(best_model)
+        else:
+            self.best_model = self._extract_best_model(scores)
 
         if self.__conditions_to_make_report():
             self.make_report(self.report_type, scores)
@@ -122,3 +128,10 @@ class Classifier(BaseModel):
                 'learning_rate': [1, 0.1, 0.5]
             }
         }
+
+from sklearn.datasets import make_classification
+
+X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
+
+c = Classifier(report_type='json')
+c.fit(X_c, y_c)
