@@ -1,6 +1,8 @@
 import numpy as np
-from json import dump, load
+from json import dump
 from numpy import ndarray, array
+
+from firecannon.exceptions import InvalidParamException
 
 
 def write_json(data: dict, filepath: str) -> None:
@@ -16,7 +18,8 @@ def check_shape_compatibility(x: any, y: any) -> bool:
     y = convert_to_np_array(y)
 
     ROW_INDEX = 0
-    return x.shape[ROW_INDEX] == y.shape[ROW_INDEX]
+    if x.shape[ROW_INDEX] != y.shape[ROW_INDEX]:
+        raise InvalidParamException('Numbers of rows in X must match number of rows in y')
 
 
 def convert_to_np_array(vector: any) -> ndarray:
