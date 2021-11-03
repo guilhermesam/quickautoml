@@ -1,1 +1,1 @@
-from .logistic_regression import LogisticRegression
+from .stub_models import LogisticRegressionStub

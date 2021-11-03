@@ -1,7 +1,7 @@
 from sklearn.model_selection import GridSearchCV
 
 from firecannon.utils import check_shape_compatibility
-from firecannon.errors import IncompatibleDataShapeException
+from firecannon.exceptions import IncompatibleDataShapeException
 from firecannon.entities import Model
 
 
@@ -28,9 +28,6 @@ class BestParamsTestSuite:
                f'scoring: {self.scoring}'
 
     def run(self, X: any, y: any, model: any, model_settings: dict):
-        if not check_shape_compatibility(X, y):
-            raise IncompatibleDataShapeException(X.shape[0], y.shape[0])
-
         grid_search = GridSearchCV(estimator=model,
                                    param_grid=model_settings,
                                    cv=self.k_folds,

@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
 
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+
 from firecannon.entities import Model
 from firecannon.exceptions import InvalidParamException
 from firecannon.services.best_hyperparams import BestParamsTestSuite
 from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
 from firecannon.reports import BarplotReport, CsvReport, JsonReport
 from firecannon.utils import check_shape_compatibility
+from tests.resources.stub_models import ModelStub, LogisticRegressionStub
 
 
 class BaseModel:
@@ -26,15 +30,20 @@ class BaseModel:
     self.__valid_report_types = [
       'plot', 'csv', 'json'
     ]
+    self.__check_valid_report_type()
     self.model_settings = self._default_models_config() if not models_settings else models_settings
 
   def estimator_checks(self):
-    self.__check_valid_models()
     self.__check_valid_report_type()
 
   def __check_valid_report_type(self) -> bool:
-    if not (self.report_type and self.report_type in self.__valid_report_types):
-      raise InvalidParamException(f'Supplied report type is invalid. Choose a value from {self.__valid_report_types}')
+    if self.report_type:
+      if self.report_type in self.__valid_report_types:
+        return True
+      else:
+        raise InvalidParamException(f'Supplied report type is invalid. Choose a value from {self.__valid_report_types}')
+    else:
+      return False
 
   @abstractmethod
   def _default_models_config(self):
@@ -62,13 +71,13 @@ class BaseModel:
       self.best_model = self._extract_best_model(scores)
 
     if self.__check_valid_report_type():
-      self.make_report(self.report_type, scores)
+      self.make_report_mapper(self.report_type, scores)
 
   def predict(self, X):
     return self.best_model.predict(X)
 
   @staticmethod
-  def make_report(report_type: str, scores: dict):
+  def make_report_mapper(report_type: str, scores: dict):
     report_types = {
       'plot': BarplotReport(),
       'csv': CsvReport(),

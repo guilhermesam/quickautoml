@@ -10,7 +10,7 @@ class ModelsSupplier(ABC):
     self._models_codes = None
 
   @abstractmethod
-  def get_model(model_name: str):
+  def get_model(self, model_name: str):
     """
     Deve retornar uma instância de um modelo, de acordo com o nome do mesmo. Possíveis nomes:
     Classificadores:
