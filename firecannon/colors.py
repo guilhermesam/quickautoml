@@ -5,6 +5,6 @@ class ConsoleColors:
     OKGREEN = '\033[92m'
     WARNING = '\033[93m'
     FAIL = '\033[91m'
-    END_LINE = '\033[0m'
+    END_COLORS = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
