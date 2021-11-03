@@ -1,1 +1,1 @@
-from services.runners import Classifier, Regressor
+from firecannon.services.runners import Classifier, Regressor
