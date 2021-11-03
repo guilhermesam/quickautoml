@@ -1,6 +1,7 @@
 import unittest
 from firecannon.estimators import Classifier
 from firecannon.colors import ConsoleColors
+from firecannon.exceptions import InvalidParamException
 
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
@@ -34,6 +35,11 @@ class EstimatorsTestCase(unittest.TestCase):
       estimator.fit(self.X_train, self.y_train)
     except Exception as exception:
       self.fail(f'Fitted estimator with personal model raises {exception} unexpectedly')
+
+  def test_invalid_report_type(self):
+    print('Should throw if invalid report type is supplied... ', end='')
+    with self.assertRaises(InvalidParamException):
+      estimator = Classifier(report_type='invalid')
 
 
 if __name__ == '__main__':
