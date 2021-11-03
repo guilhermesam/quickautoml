@@ -48,6 +48,13 @@ class EstimatorsTestCase(unittest.TestCase):
     except Exception as exception:
       self.fail(f'Valid report type supplied throws {exception} unexpectedly')
 
+  def test_valid_metric(self):
+    print('Should be ok if valid metric is supplied')
+    try:
+      estimator = Classifier(metric='accuracy')
+    except Exception as exception:
+      self.fail(f'Valid metric supplied throws {exception} unexpectedly')
+
 
 if __name__ == '__main__':
     unittest.main()
