@@ -41,6 +41,13 @@ class EstimatorsTestCase(unittest.TestCase):
     with self.assertRaises(InvalidParamException):
       estimator = Classifier(report_type='invalid')
 
+  def test_valid_report_type(self):
+    print('Should be ok if valid report type is supplied...', end='')
+    try:
+      estimator = Classifier(report_type='plot')
+    except Exception as exception:
+      self.fail(f'Valid report type supplied throws {exception} unexpectedly')
+
 
 if __name__ == '__main__':
     unittest.main()
