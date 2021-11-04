@@ -1,7 +1,4 @@
-from abc import ABC, abstractmethod
-
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
+from abc import abstractmethod
 
 from firecannon.entities import Model
 from firecannon.exceptions import InvalidParamException
@@ -9,7 +6,6 @@ from firecannon.services.best_hyperparams import BestParamsTestSuite
 from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
 from firecannon.reports import BarplotReport, CsvReport, JsonReport
 from firecannon.utils import check_shape_compatibility
-from tests.resources.stub_models import ModelStub, LogisticRegressionStub
 
 
 class BaseModel:
@@ -30,13 +26,17 @@ class BaseModel:
     self.__valid_report_types = [
       'plot', 'csv', 'json'
     ]
-    self.__check_valid_report_type()
+    self.__estimator_checks()
     self.model_settings = self._default_models_config() if not models_settings else models_settings
 
-  def estimator_checks(self):
-    self.__check_valid_report_type()
+  def __estimator_checks(self):
+    self._check_valid_metric()
+    self._check_valid_report_type()
 
-  def __check_valid_report_type(self) -> bool:
+  def _check_valid_metric(self):
+    pass
+
+  def _check_valid_report_type(self) -> bool:
     if self.report_type:
       if self.report_type in self.__valid_report_types:
         return True
@@ -70,7 +70,7 @@ class BaseModel:
     else:
       self.best_model = self._extract_best_model(scores)
 
-    if self.__check_valid_report_type():
+    if self._check_valid_report_type():
       self.make_report_mapper(self.report_type, scores)
 
   def predict(self, X):
@@ -116,7 +116,7 @@ class Regressor(BaseModel):
         'normalize': [True, False]
       }
     }
-
+ 
 
 class Classifier(BaseModel):
   def __init__(self,
@@ -124,9 +124,13 @@ class Classifier(BaseModel):
                report_type: str = None,
                models_settings: dict = None
                ) -> None:
-    super().__init__(metric, report_type, models_settings)
+    self.__valid_metrics = ['accuracy', 'precision', 'recall']
     self.report_type = report_type
-    self.valid_metrics = ['accuracy', 'precision', 'recall']
+    super().__init__(metric, report_type, models_settings)
+
+  def _check_valid_metric(self):
+    if self.metric not in self.__valid_metrics:
+      raise InvalidParamException(f'Supplied report type is invalid. Choose a value from {self.__valid_metrics}')
 
   def _default_models_config(self):
     return {
