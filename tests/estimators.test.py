@@ -48,8 +48,13 @@ class EstimatorsTestCase(unittest.TestCase):
     except Exception as exception:
       self.fail(f'Valid report type supplied throws {exception} unexpectedly')
 
+  def test_invalid_metric(self):
+    print('Should throw if invalid metric is supplied... ', end='')
+    with self.assertRaises(InvalidParamException):
+      estimator = Classifier(metric='invalid')
+    
   def test_valid_metric(self):
-    print('Should be ok if valid metric is supplied')
+    print('Should be ok if valid metric is supplied... ')
     try:
       estimator = Classifier(metric='accuracy')
     except Exception as exception:
