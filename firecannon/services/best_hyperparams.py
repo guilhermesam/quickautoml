@@ -1,7 +1,5 @@
 from sklearn.model_selection import GridSearchCV
 
-from firecannon.utils import check_shape_compatibility
-from firecannon.exceptions import IncompatibleDataShapeException
 from firecannon.entities import Model
 
 
@@ -11,10 +9,10 @@ class BestParamsTestSuite:
     """
 
     def __init__(self,
-                 k_folds=4,
-                 n_jobs=-1,
-                 verbose=False,
-                 scoring='accuracy'
+                 k_folds,
+                 n_jobs,
+                 verbose,
+                 scoring
     ):
         self.k_folds = k_folds
         self.n_jobs = n_jobs

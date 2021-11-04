@@ -14,15 +14,15 @@ class BaseModel:
                models_settings: str = None,
                metric_threshold: float = 0.80,
                models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
-    self.metric = metric
-    self.report_type = report_type
-    self._models_supplier = models_supplier
     self.k_folds = 5
     self.n_jobs = -1
     self.random_state = 777
     self.verbose = False
     self.best_model = None
+    self.metric = metric
+    self.report_type = report_type
     self.metric_threshold = metric_threshold
+    self._models_supplier = models_supplier
     self.__valid_report_types = [
       'plot', 'csv', 'json'
     ]
@@ -34,6 +34,7 @@ class BaseModel:
     self._check_valid_report_type()
 
   def _check_valid_metric(self):
+    """Deve ser implementado na subclasse"""
     pass
 
   def _check_valid_report_type(self) -> bool:
@@ -73,6 +74,10 @@ class BaseModel:
     if self._check_valid_report_type():
       self.make_report_mapper(self.report_type, scores)
 
+  @staticmethod
+  def _extract_best_model(scores):
+    return max(scores, key=scores.get)
+
   def predict(self, X):
     return self.best_model.predict(X)
 
@@ -84,10 +89,6 @@ class BaseModel:
       'json': JsonReport()
     }
     report_types.get(report_type).make_report(scores)
-
-  @staticmethod
-  def _extract_best_model(scores):
-    return max(scores, key=scores.get)
 
 
 class Regressor(BaseModel):
@@ -149,3 +150,16 @@ class Classifier(BaseModel):
         'learning_rate': [1, 0.1, 0.5]
       }
     }
+
+
+from sklearn.datasets import make_classification
+from time import time
+
+X, y = make_classification(n_classes=2, n_samples=20000, n_features=10)
+c = Classifier()
+
+start = time()
+c.fit(X, y)
+end = time()
+
+print(end - start)
