@@ -35,5 +35,7 @@ class BestParamsTestSuite:
         grid_search.fit(X, y)
 
         return Model(
-            grid_search.best_estimator_, grid_search.best_score_
+          name=grid_search.best_estimator_.__str__(),
+          score=grid_search.best_score_,
+          estimator=grid_search.best_estimator_
         )

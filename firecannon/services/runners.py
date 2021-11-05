@@ -6,6 +6,7 @@ from firecannon.services.best_hyperparams import BestParamsTestSuite
 from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
 from firecannon.reports import BarplotReport, CsvReport, JsonReport
 from firecannon.utils import check_shape_compatibility
+from firecannon.preprocessors import DataPreprocessor
 
 
 class BaseModel:
@@ -28,6 +29,7 @@ class BaseModel:
     ]
     self.__estimator_checks()
     self.model_settings = self._default_models_config() if not models_settings else models_settings
+    self.preprocessor = DataPreprocessor()
 
   def __estimator_checks(self):
     self._check_valid_metric()
@@ -52,6 +54,7 @@ class BaseModel:
 
   def fit(self, X, y) -> None:
     check_shape_compatibility(X, y)
+    X = self.preprocessor.run(X)
 
     best_hyperparams_finder = BestParamsTestSuite(
       k_folds=self.k_folds,
@@ -64,7 +67,7 @@ class BaseModel:
 
     for model, params in self.model_settings.items():
       best_model: Model = best_hyperparams_finder.run(X, y, model, params)
-      scores.update({best_model.name: best_model.score})
+      scores.update({best_model.estimator: best_model.score})
       if best_model.score > self.metric_threshold:
         self.best_model = best_model
         break
@@ -150,16 +153,3 @@ class Classifier(BaseModel):
         'learning_rate': [1, 0.1, 0.5]
       }
     }
-
-
-from sklearn.datasets import make_classification
-from time import time
-
-X, y = make_classification(n_classes=2, n_samples=20000, n_features=10)
-c = Classifier()
-
-start = time()
-c.fit(X, y)
-end = time()
-
-print(end - start)

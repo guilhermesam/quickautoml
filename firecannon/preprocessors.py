@@ -39,13 +39,13 @@ class RemoveNullValuesDecorator(StepDecorator):
     for col in matrix.columns:
       if matrix[col].isnull().all():
         matrix.drop(col)
-    matrix.dropna(inplace=True)
+    matrix = matrix.dropna()
     return self.step.run(matrix)
 
 
 class RemoveDuplicatesDecorator(StepDecorator):
   def run(self, matrix):
-    matrix.drop_duplicates(inplace=True)
+    matrix = matrix.drop_duplicates()
     return self.step.run(matrix)
 
 
