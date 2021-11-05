@@ -13,7 +13,7 @@ class BaseModel:
   def __init__(self, metric: str,
                report_type: str = None,
                models_settings: str = None,
-               metric_threshold: float = 0.80,
+               metric_threshold: float = 0.9,
                models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
     self.k_folds = 5
     self.n_jobs = -1
