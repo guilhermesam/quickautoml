@@ -54,7 +54,7 @@ class EstimatorsTestCase(unittest.TestCase):
       estimator = Classifier(metric='invalid')
     
   def test_valid_metric(self):
-    print('Should be ok if valid metric is supplied... ')
+    print('Should be ok if valid metric is supplied... ', end='')
     try:
       estimator = Classifier(metric='accuracy')
     except Exception as exception:
