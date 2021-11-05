@@ -151,5 +151,10 @@ class Classifier(BaseModel):
       self._models_supplier.get_model('ada-c'): {
         'n_estimators': [50, 100, 150],
         'learning_rate': [1, 0.1, 0.5]
+      },
+      self._models_supplier.get_model('dt'): {
+        'criterion': ['gini', 'entropy'],
+        'splitter': ['best', 'random'],
+        'max_features': ['auto', 'sqrt', 'log2']
       }
     }

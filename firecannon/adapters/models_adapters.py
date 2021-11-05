@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, RandomForestRegressor
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import Lasso, ElasticNet
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 
 
 class ModelsSupplier(ABC):
@@ -33,6 +35,8 @@ class SKLearnModelsSupplier(ModelsSupplier):
       'knn-c': KNeighborsClassifier(),
       'rf-c': RandomForestClassifier(),
       'ada-c': AdaBoostClassifier(),
+      'svc': SVC(),
+      'dt': DecisionTreeClassifier(),
       'rf-r': RandomForestRegressor(),
       'lasso': Lasso(),
       'en': ElasticNet()
