@@ -1,4 +1,5 @@
 from numpy import ndarray, array
+from pandas import DataFrame
 
 
 class Component:
@@ -23,6 +24,18 @@ class Decorator(Component):
     return self._component.run(matrix)
 
 
+class GenericMatrixToDataframeDecorator(Decorator):
+  def run(self, matrix):
+    matrix = DataFrame(matrix)
+    return self.component.run(matrix)
+
+
+class RemoveNullValuesDecorator(Decorator):
+  def run(self, matrix):
+      matrix = matrix.dropna()
+      return self.component.run(matrix)
+
+
 class GenericMatrixToNPArrayDecorator(Decorator):
   def run(self, matrix):
     if not isinstance(matrix, ndarray):
@@ -41,4 +54,6 @@ class DataPreprocessor:
   def run(self, matrix: any) -> object:
     simple = ConcreteComponent()
     decorator1 = GenericMatrixToNPArrayDecorator(simple)
-    return self.__client_code(decorator1, matrix)
+    decorator2 = RemoveNullValuesDecorator(decorator1)
+    decorator3 = GenericMatrixToDataframeDecorator(decorator2)
+    return self.__client_code(decorator3, matrix)
