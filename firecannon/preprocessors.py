@@ -32,8 +32,11 @@ class GenericMatrixToDataframeDecorator(Decorator):
 
 class RemoveNullValuesDecorator(Decorator):
   def run(self, matrix):
-      matrix = matrix.dropna()
-      return self.component.run(matrix)
+    for col in matrix.columns:
+      if matrix[col].isnull().all():
+        matrix.drop(col)
+    matrix = matrix.dropna()
+    return self.component.run(matrix)
 
 
 class GenericMatrixToNPArrayDecorator(Decorator):
