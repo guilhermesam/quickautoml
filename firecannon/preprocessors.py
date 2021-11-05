@@ -1,4 +1,4 @@
-from numpy import ndarray, array
+from numpy import ndarray, array, amax
 from pandas import DataFrame
 
 
@@ -35,7 +35,13 @@ class RemoveNullValuesDecorator(Decorator):
     for col in matrix.columns:
       if matrix[col].isnull().all():
         matrix.drop(col)
-    matrix = matrix.dropna()
+    matrix.dropna(inplace=True)
+    return self.component.run(matrix)
+
+
+class RemoveDuplicatesDecorator(Decorator):
+  def run(self, matrix):
+    matrix.drop_duplicates(inplace=True)
     return self.component.run(matrix)
 
 
@@ -57,6 +63,7 @@ class DataPreprocessor:
   def run(self, matrix: any) -> object:
     simple = ConcreteComponent()
     decorator1 = GenericMatrixToNPArrayDecorator(simple)
-    decorator2 = RemoveNullValuesDecorator(decorator1)
-    decorator3 = GenericMatrixToDataframeDecorator(decorator2)
-    return self.__client_code(decorator3, matrix)
+    decorator2 = RemoveDuplicatesDecorator(decorator1)
+    decorator3 = RemoveNullValuesDecorator(decorator2)
+    decorator4 = GenericMatrixToDataframeDecorator(decorator3)
+    return self.__client_code(decorator4, matrix)
