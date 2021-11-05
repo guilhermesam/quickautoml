@@ -29,7 +29,8 @@ class StepDecorator(AbstractStep):
 
 class GenericMatrixToDataframeDecorator(StepDecorator):
   def run(self, matrix):
-    matrix = DataFrame(matrix)
+    if not isinstance(matrix, DataFrame):
+      matrix = DataFrame(matrix)
     return self.step.run(matrix)
 
 
