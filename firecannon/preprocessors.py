@@ -36,9 +36,7 @@ class GenericMatrixToDataframeDecorator(StepDecorator):
 
 class RemoveNullValuesDecorator(StepDecorator):
   def run(self, matrix):
-    for col in matrix.columns:
-      if matrix[col].isnull().all():
-        matrix.drop(col)
+    matrix = matrix.dropna(axis=1, how='all')
     matrix = matrix.dropna()
     return self.step.run(matrix)
 
