@@ -1,7 +1,7 @@
 class Model:
-  def __init__(self, name: str, score: float, estimator: any) -> None:
+  def __init__(self, name: str, cv_score: float, estimator: any) -> None:
     self.name = name
-    self.score = score
+    self.cv_score = cv_score
     self.estimator = estimator
 
   def predict(self, X):

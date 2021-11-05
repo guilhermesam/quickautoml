@@ -36,6 +36,6 @@ class BestParamsTestSuite:
 
         return Model(
           name=grid_search.best_estimator_.__str__(),
-          score=grid_search.best_score_,
+          cv_score=grid_search.best_score_,
           estimator=grid_search.best_estimator_
         )

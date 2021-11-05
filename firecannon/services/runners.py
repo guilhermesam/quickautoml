@@ -19,7 +19,7 @@ class BaseModel:
     self.n_jobs = -1
     self.random_state = 777
     self.verbose = False
-    self.best_model = None
+    self.best_model: Model
     self.metric = metric
     self.report_type = report_type
     self.metric_threshold = metric_threshold
@@ -30,6 +30,10 @@ class BaseModel:
     self.__estimator_checks()
     self.model_settings = self._default_models_config() if not models_settings else models_settings
     self.preprocessor = DataPreprocessor()
+
+  @property
+  def cv_score(self):
+    return self.best_model.cv_score
 
   def __estimator_checks(self):
     self._check_valid_metric()
@@ -67,8 +71,8 @@ class BaseModel:
 
     for model, params in self.model_settings.items():
       best_model: Model = best_hyperparams_finder.run(X, y, model, params)
-      scores.update({best_model.estimator: best_model.score})
-      if best_model.score > self.metric_threshold:
+      scores.update({best_model.estimator: best_model.cv_score})
+      if best_model.cv_score > self.metric_threshold:
         self.best_model = best_model
         break
     else:
@@ -79,7 +83,12 @@ class BaseModel:
 
   @staticmethod
   def _extract_best_model(scores):
-    return max(scores, key=scores.get)
+    best_model = max(scores, key=scores.get)
+    return Model(
+      name=best_model.__str__(),
+      cv_score=max(scores.values()),
+      estimator=best_model
+    )
 
   def predict(self, X):
     return self.best_model.predict(X)
