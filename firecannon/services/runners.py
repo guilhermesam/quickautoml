@@ -10,19 +10,14 @@ from firecannon.preprocessors import DataPreprocessor
 
 
 class BaseModel:
-  def __init__(self, metric: str,
+  def __init__(self,
+               metric: str,
                report_type: str = None,
                models_settings: str = None,
-               metric_threshold: float = 0.9,
                models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
-    self.k_folds = 5
-    self.n_jobs = -1
-    self.random_state = 777
-    self.verbose = False
     self.best_model: Model
     self.metric = metric
     self.report_type = report_type
-    self.metric_threshold = metric_threshold
     self._models_supplier = models_supplier
     self.__valid_report_types = [
       'plot', 'csv', 'json'
@@ -60,23 +55,15 @@ class BaseModel:
     check_shape_compatibility(X, y)
     X = self.preprocessor.run(X)
 
-    best_hyperparams_finder = BestParamsTestSuite(
-      k_folds=self.k_folds,
-      n_jobs=self.n_jobs,
-      verbose=self.verbose,
-      scoring=self.metric
-    )
+    best_hyperparams_finder = BestParamsTestSuite(scoring=self.metric)
 
     scores = {}
 
     for model, params in self.model_settings.items():
       best_model: Model = best_hyperparams_finder.run(X, y, model, params)
       scores.update({best_model.estimator: best_model.cv_score})
-      if best_model.cv_score > self.metric_threshold:
-        self.best_model = best_model
-        break
-    else:
-      self.best_model = self._extract_best_model(scores)
+
+    self.best_model = self._extract_best_model(scores)
 
     if self._check_valid_report_type():
       self.make_report_mapper(self.report_type, scores)
