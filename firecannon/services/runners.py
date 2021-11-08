@@ -10,19 +10,14 @@ from firecannon.preprocessors import DataPreprocessor
 
 
 class BaseModel:
-  def __init__(self, metric: str,
+  def __init__(self,
+               metric: str,
                report_type: str = None,
                models_settings: str = None,
-               metric_threshold: float = 0.9,
                models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
-    self.k_folds = 5
-    self.n_jobs = -1
-    self.random_state = 777
-    self.verbose = False
     self.best_model: Model
     self.metric = metric
     self.report_type = report_type
-    self.metric_threshold = metric_threshold
     self._models_supplier = models_supplier
     self.__valid_report_types = [
       'plot', 'csv', 'json'
@@ -60,12 +55,7 @@ class BaseModel:
     check_shape_compatibility(X, y)
     X = self.preprocessor.run(X)
 
-    best_hyperparams_finder = BestParamsTestSuite(
-      k_folds=self.k_folds,
-      n_jobs=self.n_jobs,
-      verbose=self.verbose,
-      scoring=self.metric
-    )
+    best_hyperparams_finder = BestParamsTestSuite(scoring=self.metric)
 
     scores = {}
 
