@@ -12,3 +12,4 @@ COPY requirements.txt /firecannon/requirements.txt
 ENV PYTHONPATH="${PYTHONPATH}:."
 
 RUN pip install -r requirements.txt
+RUN python3 setup.py install
