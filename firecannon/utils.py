@@ -1,6 +1,11 @@
-from json import dump
+from json import dump, load
 
 from firecannon.exceptions import IncompatibleDataShapeException
+
+
+def load_json(path: str) -> dict:
+    file = open(path)
+    return load(file)
 
 
 def write_json(data: dict, filepath: str) -> None:
