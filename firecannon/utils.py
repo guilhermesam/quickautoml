@@ -1,11 +1,14 @@
 from json import dump, load
+from io import FileIO
 
 from firecannon.exceptions import IncompatibleDataShapeException
 
 
 def load_json(path: str) -> dict:
     file = open(path)
-    return load(file)
+    data = load(file)
+    file.close()
+    return data
 
 
 def write_json(data: dict, filepath: str) -> None:
@@ -14,6 +17,10 @@ def write_json(data: dict, filepath: str) -> None:
             dump(data, file, indent=4)
     except IOError as error:
         raise error(f'I/O Error: {error}')
+
+
+def close_file(file: FileIO):
+    file.close()
 
 
 def check_shape_compatibility(X: any, y: any) -> None:

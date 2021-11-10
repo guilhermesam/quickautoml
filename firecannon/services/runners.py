@@ -1,12 +1,12 @@
 from abc import abstractmethod
 
-from firecannon.entities import Model
 from firecannon.exceptions import InvalidParamException
-from firecannon.services.best_hyperparams import BestParamsTestSuite
+from firecannon.services.hyperparams_tunners import OptunaHyperparamsTunner
 from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
 from firecannon.reports import BarplotReport, CsvReport, JsonReport
 from firecannon.utils import check_shape_compatibility
 from firecannon.preprocessors import DataPreprocessor
+from firecannon.entities import NaiveModel, FittedModel, Hyperparameter
 
 
 class BaseModel:
@@ -15,7 +15,7 @@ class BaseModel:
                report_type: str = None,
                models_settings: str = None,
                models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
-    self.best_model: Model
+    self.best_model: FittedModel
     self.metric = metric
     self.report_type = report_type
     self._models_supplier = models_supplier
@@ -55,15 +55,16 @@ class BaseModel:
     check_shape_compatibility(X, y)
     X = self.preprocessor.run(X)
 
-    best_hyperparams_finder = BestParamsTestSuite(scoring=self.metric)
+    hyperparams_tunner = OptunaHyperparamsTunner(scoring=self.metric)
 
     scores = {}
 
     for model, params in self.model_settings.items():
-      best_model: Model = best_hyperparams_finder.run(X, y, model, params)
+      best_model: FittedModel = hyperparams_tunner.run(X, y, model, params)
       scores.update({best_model.estimator: best_model.cv_score})
 
     self.best_model = self._extract_best_model(scores)
+    self.best_model.estimator.fit(X, y)
 
     if self._check_valid_report_type():
       self.make_report_mapper(self.report_type, scores)
@@ -71,7 +72,7 @@ class BaseModel:
   @staticmethod
   def _extract_best_model(scores):
     best_model = max(scores, key=scores.get)
-    return Model(
+    return FittedModel(
       name=best_model.__str__(),
       cv_score=max(scores.values()),
       estimator=best_model
@@ -134,23 +135,16 @@ class Classifier(BaseModel):
 
   def _default_models_config(self):
     return {
-      self._models_supplier.get_model('knn-c'): {
-        'n_neighbors': [3, 5, 7],
-        'leaf_size': [15, 30, 45, 60],
-        'weights': ['uniform', 'distance']
-      },
-      self._models_supplier.get_model('rf-c'): {
-        'n_estimators': [50, 100, 150],
-        'criterion': ['gini', 'entropy'],
-        'max_features': ['auto', 'log2', 'sqrt'],
-      },
-      self._models_supplier.get_model('ada-c'): {
-        'n_estimators': [50, 100, 150],
-        'learning_rate': [1, 0.1, 0.5]
-      },
-      self._models_supplier.get_model('dt'): {
-        'criterion': ['gini', 'entropy'],
-        'splitter': ['best', 'random'],
-        'max_features': ['auto', 'sqrt', 'log2']
-      }
+      NaiveModel(name='KNeighbors Classifier', estimator=self._models_supplier.get_model('knn-c')): [
+        Hyperparameter(name='n_neighbors', data_type='int', min_value=3, max_value=7),
+        Hyperparameter(name='leaf_size', data_type='int', min_value=15, max_value=60)
+      ],
+      NaiveModel(name='RandomForest Classifier', estimator=self._models_supplier.get_model('rf-c')): [
+        Hyperparameter(name='n_estimators', data_type='int', min_value=10, max_value=60),
+        Hyperparameter(name='min_samples_leaf', data_type='int', min_value=2, max_value=64)
+      ],
+      NaiveModel(name='Adaboost Classifier', estimator=self._models_supplier.get_model('ada-c')): [
+        Hyperparameter(name='n_estimators', data_type='int', min_value=10, max_value=100),
+        Hyperparameter(name='learning_rate', data_type='float', min_value=0.1, max_value=2)
+      ]
     }

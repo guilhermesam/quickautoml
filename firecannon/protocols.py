@@ -1,4 +1,10 @@
 from abc import ABC, abstractmethod
+from enum import Enum
+
+
+class VerboseLevels(Enum):
+    DISABLED = 0
+    ENABLED = 1
 
 
 class Metrics(ABC):
