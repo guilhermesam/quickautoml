@@ -1,4 +1,3 @@
-
 # Getting Started
 Firecannon é uma ferramenta para treinamento automatizado de modelos de machine learning. Com ela, é possível:
 - Encontrar automaticamente o melhor modelo para determinado conjunto de dados;
@@ -21,7 +20,7 @@ docker image build -t firecannon .
 docker container run firecannon
 ```
 
-### Como utilizar
+## Como utilizar?
 Firecannon implementa duas abstrações de estimadores, denominados `Classifier` e `Regressor`, para problemas de classificação e regressão, respectivamente. Ambas as classes podem ser acessadas de maneira demonstrada pelo exemplo abaixo:
 
 ```python
@@ -32,29 +31,37 @@ X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
 
 my_classifier = Classifier()
 my_classifier.fit(X_c, y_c)
-print(my_classifier.best_model) # por exemplo, KNeighborsClassifier()
+print(my_classifier.best_model) # por exemplo, KNeighborsClassifier(n_neighbors=3)
 ```
 
-### Personalizando a execução
-Firecannon foi construído de forma a fornecer uma abstração de alto nível de treinamento de modelos, portanto, não requer que o usuário interaja com detalhes de baixo nível, como definição de algoritmos ou ajuste de hiper-parâmetros. Entretanto, é possível modificar esses detalhes, através de argumentos passados às classes `Classifier` e `Regressor`. Abaixo estão elencados os possíveis atributos a serem modificados:
+## Como funciona?
+Firecannon objetiva identificar um modelo adequado para determinado problema considerando um balanço entre tempo de execução e desempenho. Para isso, internamente, a Firecannon seleciona esse modelo através da definição de uma lista de candidatos possíveis. Estes candidatos podem ser o mesmo algoritmo, porém com configurações de hiper-parâmetros diferentes (por exemplo, várias versões de Random Forest, com número de estimadores diferentes entre si). Esta lista, no entanto, pode ser alterada conforme as [especificações do usuário](#personalizando-a-execução).
 
-* **model_settings: dict, default=None**: Especifica um dicionário de modelos personalizados, a qual deve conter instâncias de modelos como chaves e um dicionário de hiper-parâmetros **válidos** como valores. A implementação de modelos personalizados deve seguir o contrato definido na [documentação](https://scikit-learn.org/stable/developers/develop.html) do scikit-learn. A estrutura de dicionário esperada por `model_settings` deve ser parecida com o exemplo abaixo:
-	```python
+### Conceitos-chave
+* **NaiveModel**: Estrutura de dados referente a um modelo "ingênuo", isto é, que ainda não teve seus hiper-parâmetros ajustados. É utilizado para a definição de modelos personalizados pelo usuário, em detrimento dos algoritmos-padrão definidos internamente pela ferramenta. Para ser instanciado, necessita das seguintes informações: 
+	* name: o nome do algoritmo;
+	* estimator: uma instância de algoritmo que será utilizado como candidato a modelo. Consulte [criando modelos personalizados](#criando-modelos-personalizados) ou a [documentação](https://scikit-learn.org/stable/developers/develop.html) do scikit-learn para informações sobre como criar modelos personalizados.
+
+* **FittedModel**: Estrutura de dados que estende as informações do ```NaiveModel```. Representa um modelo com seus hiper-parâmetros ajustados. É retornada ao final do treinamento como o modelo representante do conjunto de dados. Em adição aos dados de ```NaiveModel```, possui:
+	* cv_score: a pontuação (score) obtida pelo modelo;
+
+* **Hyperparameter**: 
+
+## Personalizando a execução
+Firecannon foi construído de forma a fornecer uma abstração de alto nível de treinamento de modelos, portanto, não requer que o usuário interaja com detalhes de baixo nível, como definição de algoritmos ou ajuste de hiper-parâmetros. Entretanto, é possível modificar esses detalhes, através da especificação dos seguintes parâmetros ao objeto estimador (```Classifier``` ou ```Regressor```):
+
+* **model_settings: dict, default=None**: Especifica um dicionário de modelos personalizados, a qual deve conter instâncias de modelos como chaves e um dicionário de hiper-parâmetros **válidos** como valores. A estrutura de dicionário esperada por `model_settings` espera uma instância de NaiveModel, que representa um modelo com hiper-parâmetros ainda não ajustados, como chave do dicionário, e uma lista de objetos da classe Hyperparameter como instância. Consulte os [conceitos-chave](#conceitos-chave).
+ 
+	```python	
 	{
-	    MyKNeighborsInstance(): {
-			'n_neighbors': [3, 5, 7],
-			'leaf_size': [15, 30, 45, 60],
-			'weights': ['uniform', 'distance']
-	    },
-	    MyRandomForestClassifierInstance(): {
-			'n_estimators': [50, 100, 150],
-			'criterion': ['gini', 'entropy'],
-			'max_features': ['auto', 'log2', 'sqrt'],
-	    },
-	    MyAdaBoostClassifierInstance(): {
-			'n_estimators': [50, 100, 150],
-			'learning_rate': [1, 0.1, 0.5]
-	    }
+		NaiveModel(name='RandomForest Classifier', estimator=self._models_supplier.get_model('rf-c')): [
+			Hyperparameter(name='n_estimators', data_type='int', min_value=10, max_value=60),
+			Hyperparameter(name='min_samples_leaf', data_type='int', min_value=2, max_value=64)
+		],
+		NaiveModel(name='Adaboost Classifier', estimator=self._models_supplier.get_model('ada-c')): [
+			Hyperparameter(name='n_estimators', data_type='int', min_value=10, max_value=100),
+			Hyperparameter(name='learning_rate', data_type='float', min_value=0.1, max_value=2)
+		]
 	}
 	```
 
@@ -66,33 +73,8 @@ Firecannon foi construído de forma a fornecer uma abstração de alto nível de
 
 * **random_state: int, default=777**: Define a semente que será utilizada para a geração dos números pseudo-aleatórios empregados no processo de treinamento e seleção de modelos. Mantido com o objetivo de reduzir a aleatoriedade dos experimentos.
 
-### Encontrando os melhores hiperparâmetros
-O teste para obtenção dos melhores hiperparâmetros é feito pela classe BestParamsTestSuite, que recebe como parâmetro no construtor um dicionário, com as configurações do teste:
 
-* **verbose**: se for True, exibe no console os melhores parâmetros encontrados para cada modelo;
-* **output_path**: o caminho de um arquivo json que, se fornecido, irá armazenar a saída da busca pelos melhores hiperparâmetros.
-* **n_splits**: número de folds do cross validation: padrão=4
-* **n_jobs**: número de jobs rodando em paralelo: padrão=-1
-
-O teste é realizado através do método run( ), que possui os seguintes parâmetros:
-
-* **x**: implementação de uma matriz contendo as features  
-* **y**: implementação de uma matriz contendo os rótulos (labels)
-* **model_parameters**:  um dicionário contendo como chave um objeto instanciado e como valor um outro dicionário, que por sua vez contém o nome do hiperparâmetro como chave e uma lista de valores a serem testados como valor. Exemplo:
-```python
-model_parameters = {
-	KNeighborsClassifier(): {  
-		'n_neighbors': [3, 5],  
-		'p': [1, 2]
-	},  
-	RandomForestClassifier(): {  
-		'n_estimators': [100, 200],  
-		'max_features': ['auto', 'sqrt']
-	}
-}
-```
----
-**--|> Nota:**
+## Criando modelos personalizados
 Neste exemplo, os modelos utilizados são de implementações do scikit-learn. Porém, o programa aceita qualquer implementação de modelo, desde que forneça os seguintes métodos, de acordo com a categoria do modelo:
 
 **Estimator**: objeto base, implementa um método um dos seguintes métodos fit
@@ -114,21 +96,3 @@ transformer.fit_transform(data)
 ```python
 model.score(data)
 ```
-É recomendado que quaisquer implementações além das fornecidas pelo scikit-learn implementem, pelo menos, os métodos de Estimator, Predictor e Model.
-
----
-**test_parameters**: um dicionário contendo os parâmetros utilizados pelo teste, propriamente dito. Pode receber os seguintes valores:
-
-## Testando os modelos
-O teste dos modelos é feito através da classe ParameterizedTestSuite, que recebe como parâmetro no construtor um dicionário, com as configurações do teste:
-* **stratify**: se True, obtém amostras estratificadas de cada classe no vetor de features. Recomendado em problemas de classificação.
-* **n_splits**: número de folds do cross validation: padrão=4
-* **float_precision**: precisão do resultado, em casas decimais: padrão=3
-* **problem_type**: tipo de problema a qual se aplica o teste (classificação e regressão)
-
-O teste é realizado através do método run( ), que possui os seguintes parâmetros:
-* **x**: implementação de uma matriz contendo as features ;
-* **y**: implementação de uma matriz contendo os rótulos (labels);
-* **models**: uma lista de modelos instanciados;
-
-O método fornece, como resultado, um DataFrame contendo a  média e desvio padrão de acurácia, precisão e revocação (recall) para cada um dos modelos.
