@@ -15,6 +15,8 @@ paste
 tasks-motorola
 setup.sh
 tests/experiment/*.txt
+optuna-example.py
+tests/datasets/
 
 # Build Files
 build
