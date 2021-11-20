@@ -1,7 +1,11 @@
 import unittest
+
+from firecannon.entities import Hyperparameter
 from firecannon.estimators import Classifier
 from firecannon.colors import ConsoleColors
 from firecannon.exceptions import InvalidParamException
+from firecannon.services.runners import NaiveModel
+
 
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
@@ -23,18 +27,14 @@ class EstimatorsTestCase(unittest.TestCase):
 
   def test_personal_models(self):
     print('Should be ok with valid personal models... ', end='')
-    my_model = LogisticRegressionStub()
+    my_model = NaiveModel(name="Logistic Regression", estimator=LogisticRegressionStub())
     model_parameters = {
-      'learning_rate': [0.01, 0.1, 1],
-      'fit_intercept': [True, False],
+      Hyperparameter(name='learning_rate', data_type='float', min_value=0.01, max_value=1),
     }
-    try:
-      estimator = Classifier(models_settings={
-        my_model: model_parameters
-      })
-      estimator.fit(self.X_train, self.y_train)
-    except Exception as exception:
-      self.fail(f'Fitted estimator with personal model raises {exception} unexpectedly')
+    estimator = Classifier(models_settings={
+      my_model: model_parameters
+    })
+    estimator.fit(self.X_train, self.y_train)
 
   def test_invalid_report_type(self):
     print('Should throw if invalid report type is supplied... ', end='')
