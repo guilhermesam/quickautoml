@@ -1,12 +1,12 @@
 from abc import ABC
-from typing import Callable, List
+from typing import Callable, List, Union
 from os.path import join
 from pathlib import Path
 
 from optuna import Trial, create_study
 from optuna.logging import set_verbosity, WARNING
 from sklearn.model_selection import GridSearchCV, cross_val_score
-from numpy import mean
+from numpy import mean, ndarray
 
 from firecannon.protocols import VerboseLevels
 from firecannon.entities import NaiveModel, FittedModel, Hyperparameter
@@ -19,18 +19,22 @@ class HyperparamsTunnerBase(ABC):
                ):
     __dir = Path(__file__).parent.resolve()
     default_config: dict = load_json(join(__dir, '../default_config.json'))
-    self.k_folds = default_config['k_folds']
-    self.scoring = scoring
-    self.n_jobs = default_config['n_jobs']
-    self.verbose = default_config['verbose']
+    self.k_folds: int = default_config['k_folds']
+    self.scoring: str = scoring
+    self.n_jobs: int = default_config['n_jobs']
+    self.verbose: int = default_config['verbose']
 
-  def __str__(self):
+  def __str__(self) -> str:
     return f'k_folds: {self.k_folds}\n' \
            f'n_jobs: {self.n_jobs}\n' \
            f'verbose: {self.verbose}\n' \
            f'scoring: {self.scoring}'
 
-  def run(self, X: any, y: any, model: any, model_settings: dict):
+  def run(self,
+          X: Union[ndarray, List[list]],
+          y: Union[ndarray, List[list]],
+          naive_model: NaiveModel,
+          model_settings: List[Hyperparameter]) -> FittedModel:
     pass
 
 
@@ -45,11 +49,15 @@ class OptunaHyperparamsTunner(HyperparamsTunnerBase):
       'float': trial.suggest_float
     }.get(data_type)
 
-  def run(self, X: any, y: any, naive_model: NaiveModel, model_settings: List[Hyperparameter]):
+  def run(self,
+          X: Union[ndarray, List[list]],
+          y: Union[ndarray, List[list]],
+          naive_model: NaiveModel,
+          model_settings: List[Hyperparameter]) -> FittedModel:
     if self.verbose == VerboseLevels.DISABLED.value:
       set_verbosity(WARNING)
 
-    def objective(trial):
+    def objective(trial: Trial) -> float:
       optimizations = {}
       for hyperparameter in model_settings:
         suggest_function = self.__get_right_suggest_function(trial, hyperparameter.data_type)
@@ -65,7 +73,7 @@ class OptunaHyperparamsTunner(HyperparamsTunnerBase):
     study = create_study(direction='maximize',
                          study_name=f'{naive_model.name} Hyperparameter Tunning'
                          )
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, n_trials=100)
     best_model = naive_model.estimator.set_params(**study.best_params)
     return FittedModel(
       name=naive_model.name,
@@ -78,13 +86,17 @@ class GridSearchHyperparamsTunner(HyperparamsTunnerBase):
   def __init__(self, scoring: str):
     super(HyperparamsTunnerBase, self).__init__(scoring)
 
-  def run(self, X: any, y: any, model: any, model_settings: dict):
-    grid_search = GridSearchCV(estimator=model,
+  def run(self,
+          X: Union[ndarray, List[list]],
+          y: Union[ndarray, List[list]],
+          naive_model: NaiveModel,
+          model_settings: List[Hyperparameter]) -> FittedModel:
+    grid_search = GridSearchCV(estimator=naive_model.estimator,
                                param_grid=model_settings,
                                cv=self.k_folds,
                                verbose=self.verbose,
                                n_jobs=self.n_jobs,
-                               scoring=self.scoring or model.score)
+                               scoring=self.scoring)
     grid_search.fit(X, y)
 
     return FittedModel(

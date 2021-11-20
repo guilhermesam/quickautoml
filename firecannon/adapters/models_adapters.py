@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Callable
 
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, RandomForestRegressor
 from sklearn.neighbors import KNeighborsClassifier
@@ -42,6 +43,5 @@ class SKLearnModelsSupplier(ModelsSupplier):
       'en': ElasticNet()
     }
 
-  def get_model(self, model_name: str):
-    required_model = self._models_codes.get(model_name)
-    return required_model
+  def get_model(self, model_name: str) -> object:
+    return self._models_codes.get(model_name)

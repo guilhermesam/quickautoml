@@ -1,16 +1,18 @@
+from csv import writer
+from json import dump
+from typing import Any, Dict
+
 from pandas import Series, DataFrame
 from numpy import mean, std
 from matplotlib import pyplot as plt
-from csv import writer
-from json import dump
 
 
 class Report:
-    def make_report(self, data: dict):
+    def make_report(self, data: Dict[Any, float]):
         raise NotImplementedError()
 
     @staticmethod
-    def get_columns_names(data):
+    def get_columns_names(data: Dict[Any, float]):
         metric_names = list(data.values())[0].keys()
         columns = []
         [columns.extend([f'mean_{metric}', f'std_{metric}']) for metric in metric_names]
@@ -28,7 +30,8 @@ class Report:
 
 
 class JsonReport(Report):
-    def make_report(self, data: dict):
+    def make_report(self, data: Dict[Any, float]):
+        print(data)
         with open('models.json', 'w') as models_output:
             processed_dict = {key.__class__.__name__: value for key, value in data.items()}
             dump(processed_dict, models_output)
@@ -50,8 +53,7 @@ class DataframeReport(Report):
 
 
 class BarplotReport(Report):
-    @staticmethod
-    def make_report(data: dict) -> None:
+    def make_report(self, data: Dict[Any, float]) -> None:
         results = Series(
             data=data.values(),
             index=data.keys()

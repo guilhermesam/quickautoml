@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import List, Union
+
+from numpy import ndarray
 
 
 class VerboseLevels(Enum):
@@ -10,25 +13,25 @@ class VerboseLevels(Enum):
 class Metrics(ABC):
     @staticmethod
     @abstractmethod
-    def mse(y_true, y_pred):
+    def mse(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
         pass
 
     @staticmethod
     @abstractmethod
-    def r2(y_true, y_pred):
+    def r2(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
         pass
 
     @staticmethod
     @abstractmethod
-    def accuracy(y_true, y_pred):
+    def accuracy(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
         pass
 
     @staticmethod
     @abstractmethod
-    def precision(y_true, y_pred):
+    def precision(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
         pass
 
     @staticmethod
     @abstractmethod
-    def recall(self, y_true, y_pred):
+    def recall(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
         pass

@@ -1,21 +1,23 @@
-from typing import Union
+from typing import Union, Any, List
+
+from numpy import ndarray
 
 
 class NaiveModel:
-  def __init__(self, name: str, estimator) -> None:
-    self.name = name
-    self.estimator = estimator
+  def __init__(self, name: str, estimator: Any):
+    self.name: str = name
+    self.estimator: Any = estimator
 
-  def __str__(self):
+  def __str__(self) -> str:
     return self.estimator.__str__()
 
 
 class FittedModel(NaiveModel):
-  def __init__(self, name: str, cv_score: float, estimator) -> None:
+  def __init__(self, name: str, cv_score: float, estimator: Any):
     super().__init__(name, estimator)
-    self.cv_score = cv_score
+    self.cv_score: float = cv_score
 
-  def predict(self, X):
+  def predict(self, X: Union[ndarray, List[list]]):
     return self.estimator.predict(X)
 
 
@@ -23,9 +25,9 @@ class Hyperparameter:
   def __init__(self,
                name: str,
                data_type: str,
-               min_value: Union[int, float],
-               max_value: Union[int, float]):
-    self.name = name
-    self.data_type = data_type
-    self.min_value = min_value
-    self.max_value = max_value
+               min_value: float,
+               max_value: float):
+    self.name: str = name
+    self.data_type: str = data_type
+    self.min_value: float = min_value
+    self.max_value: float = max_value

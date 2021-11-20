@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Dict, List
 
 from firecannon.exceptions import InvalidParamException
 from firecannon.services.hyperparams_tunners import OptunaHyperparamsTunner
@@ -48,7 +49,7 @@ class BaseModel:
       return False
 
   @abstractmethod
-  def _default_models_config(self):
+  def _default_models_config(self) -> dict:
     raise NotImplementedError('Implement default models to test')
 
   def fit(self, X, y) -> None:
@@ -99,7 +100,7 @@ class Regressor(BaseModel):
                ) -> None:
     super().__init__(metric, models_settings, report_type)
 
-  def _default_models_config(self):
+  def _default_models_config(self) -> None:
     self.model_settings = {
       self._models_supplier.get_model('rf-r'): {
         'n_estimators': [50, 100, 150],
@@ -129,11 +130,11 @@ class Classifier(BaseModel):
     self.report_type = report_type
     super().__init__(metric, report_type, models_settings)
 
-  def _check_valid_metric(self):
+  def _check_valid_metric(self) -> None:
     if self.metric not in self.__valid_metrics:
       raise InvalidParamException(f'Supplied report type is invalid. Choose a value from {self.__valid_metrics}')
 
-  def _default_models_config(self):
+  def _default_models_config(self) -> Dict[NaiveModel, List[Hyperparameter]]:
     return {
       NaiveModel(name='KNeighbors Classifier', estimator=self._models_supplier.get_model('knn-c')): [
         Hyperparameter(name='n_neighbors', data_type='int', min_value=3, max_value=7),
@@ -148,3 +149,10 @@ class Classifier(BaseModel):
         Hyperparameter(name='learning_rate', data_type='float', min_value=0.1, max_value=2)
       ]
     }
+
+
+if __name__ == '__main__':
+  from sklearn.datasets import make_classification
+  X, y = make_classification()
+  c = Classifier(report_type='json')
+  c.fit(X, y)
