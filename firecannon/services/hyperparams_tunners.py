@@ -19,8 +19,8 @@ class HyperparamsTunnerBase(ABC):
                ):
     __dir = Path(__file__).parent.resolve()
     default_config: dict = load_json(join(__dir, '../default_config.json'))
-    self.scoring = scoring
     self.k_folds = default_config['k_folds']
+    self.scoring = scoring
     self.n_jobs = default_config['n_jobs']
     self.verbose = default_config['verbose']
 
