@@ -1,8 +1,5 @@
-from random import sample
 from csv import writer
-from os.path import exists
 from time import time
-from datetime import datetime
 from typing import Any, List, Union, TextIO
 
 from numpy import ndarray, array
@@ -54,14 +51,8 @@ def run() -> None:
   datasets_list = 'dataset_stats.csv'
   df = read_csv(datasets_list, sep='\t')
 
-  if SAMPLES_NUMBER == -1:
-    classification_df = df[df['task'] == 'classification']
-    classification_dataset_names = classification_df['dataset']
-
-  else:
-    classification_df = df[df['task'] == 'classification']
-    random_indexes = sample([x for x in range(classification_df.shape[ROWS_INDEX])], SAMPLES_NUMBER)
-    classification_dataset_names = classification_df['dataset'].iloc[random_indexes]
+  classification_df = df[df['task'] == 'classification']
+  classification_dataset_names = classification_df['dataset']
 
   file = file_factory('tools_evaluation.csv')
   results_writer = csv_writer_factory(file)
