@@ -42,10 +42,14 @@ Firecannon objetiva identificar um modelo adequado para determinado problema con
 	* name: o nome do algoritmo;
 	* estimator: uma instância de algoritmo que será utilizado como candidato a modelo. Consulte [criando modelos personalizados](#criando-modelos-personalizados) ou a [documentação](https://scikit-learn.org/stable/developers/develop.html) do scikit-learn para informações sobre como criar modelos personalizados.
 
+* **Hyperparameter**: Representa um hiper-parâmetro (i.e. valor que controla o processo de aprendizado de um algoritmo). Foi construído para suportar o processo de ajuste de hiper-parâmetros, portanto, armazena os seguintes campos:
+	* name: o nome do hiper-parâmetro;
+	* data_type: o tipo de dado que o hiper-parâmetro espera receber;
+	* min_value: o valor inferior do espaço de busca;
+	* max_value: o valor superior do espaço de busca;	 
+
 * **FittedModel**: Estrutura de dados que estende as informações do ```NaiveModel```. Representa um modelo com seus hiper-parâmetros ajustados. É retornada ao final do treinamento como o modelo representante do conjunto de dados. Em adição aos dados de ```NaiveModel```, possui:
 	* cv_score: a pontuação (score) obtida pelo modelo;
-
-* **Hyperparameter**: 
 
 ## Personalizando a execução
 Firecannon foi construído de forma a fornecer uma abstração de alto nível de treinamento de modelos, portanto, não requer que o usuário interaja com detalhes de baixo nível, como definição de algoritmos ou ajuste de hiper-parâmetros. Entretanto, é possível modificar esses detalhes, através da especificação dos seguintes parâmetros ao objeto estimador (```Classifier``` ou ```Regressor```):
