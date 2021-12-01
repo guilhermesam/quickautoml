@@ -45,28 +45,31 @@ class TrainingResults:
 
 
 def run() -> None:
-  SAMPLES_NUMBER = -1
-  ROWS_INDEX = 0
-
-  datasets_list = 'dataset_stats.csv'
-  df = read_csv(datasets_list, sep='\t')
+  datasets_list = 'datasets_stats.csv'
+  df = read_csv(datasets_list, sep=',')
 
   classification_df = df[df['task'] == 'classification']
   classification_dataset_names = classification_df['dataset']
 
-  file = file_factory('tools_evaluation.csv')
-  results_writer = csv_writer_factory(file)
+  file = open('tools_evaluation.csv', 'a')
+  results_writer = writer(file)
 
   counter = 0
 
-  write_header(results_writer)
+  results_writer.writerow(
+    ['dataset_name', 'dataset_nrows', 'dataset_ncolumns', 'tpot_score',
+     'quick_score', 'autosklearn_score', 'tpot_time', 'quick_time', 'autosklearn_time']
+  )
   for dataset in classification_dataset_names:
-    print(f'[INFO] Dataset of index {counter}, name: {dataset}')
-    results: TrainingResults = train(dataset_name=dataset)
-    write_results(results_writer, results.to_list())
-    counter += 1
+    try:
+      print(f'[INFO] Dataset of index {counter}, name: {dataset}')
+      results: TrainingResults = train(dataset_name=dataset)
+      results_writer.writerow(results.to_list())
+      counter += 1
+    except Exception as e:
+      print(e)
 
-  close_file(file)
+  file.close()
 
 
 def train(dataset_name: str):
@@ -104,29 +107,6 @@ def get_score_and_time(estimator: Any, X: Union[ndarray, list], y: Union[ndarray
   predictions = estimator.predict(X_test)
   score = accuracy_score(y_test, predictions)
   return (end - start), score
-
-
-def file_factory(output_path: str):
-  return open(output_path, 'a')
-
-
-def csv_writer_factory(file):
-  return writer(file)
-
-
-def write_header(csv_writer):
-  csv_writer.writerow(
-    ['dataset_name', 'dataset_nrows', 'dataset_ncolumns', 'tpot_score',
-     'quick_score', 'autosklearn_score', 'tpot_time', 'quick_time', 'autosklearn_time']
-  )
-
-
-def write_results(csv_writer, results: list):
-  csv_writer.writerow(results)
-
-
-def close_file(file):
-  file.close()
 
 
 if __name__ == '__main__':

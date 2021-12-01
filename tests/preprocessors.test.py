@@ -1,9 +1,12 @@
 import unittest
 
+from firecannon.preprocessors import GenericMatrixToDataframeDecorator,\
+  RemoveNullValuesDecorator, RemoveDuplicatesDecorator, GenericMatrixToNPArrayDecorator
 
-class MyTestCase(unittest.TestCase):
-  def test_something(self):
-    self.assertEqual(True, True)  # add assertion here
+
+class PreprocessorsTestCase(unittest.TestCase):
+  def (self):
+
 
 
 if __name__ == '__main__':
