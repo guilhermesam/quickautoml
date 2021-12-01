@@ -8,6 +8,7 @@ best_models.json
 models.json
 *.json
 *.png
+.coverage
 
 # Personal Files
 firecannon/TODO
