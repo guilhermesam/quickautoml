@@ -53,8 +53,8 @@ class BaseModel:
     raise NotImplementedError('Implement default models to test')
 
   def fit(self, X, y) -> None:
-    check_shape_compatibility(X, y)
-    X = self.preprocessor.run(X)
+    # check_shape_compatibility(X, y)
+    # X = self.preprocessor.run(X)
 
     hyperparams_tunner = OptunaHyperparamsTunner(scoring=self.metric)
 
