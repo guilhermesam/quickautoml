@@ -1,31 +1,31 @@
 # Getting Started
-Firecannon é uma ferramenta para treinamento automatizado de modelos de machine learning. Com ela, é possível:
+QuickAutoML é uma ferramenta para treinamento automatizado de modelos de machine learning. Com ela, é possível:
 - Encontrar automaticamente o melhor modelo para determinado conjunto de dados;
 - Gerar relatórios de métricas para cada algoritmo treinado;
 
 ## Como instalar
 * Clonar o repositório
 ```bash
-git clone https://github.com/Malware-Hunter/firecannon
+git clone https://github.com/Malware-Hunter/quickautoml
 ```
 * Instalar a biblioteca
 ```bash
-cd firecannon
+cd quickautoml
 sh distribute.sh
 ```
 * Também é possível utilizar através do Docker (certifique-se que está instalado na máquina)
 ```bash
-cd firecannon
-docker image build -t firecannon .
-docker container run firecannon
+cd quickautoml
+docker image build -t quickautoml .
+docker container run quickautoml
 ```
 
 ## Como utilizar?
-Firecannon implementa duas abstrações de estimadores, denominados `Classifier` e `Regressor`, para problemas de classificação e regressão, respectivamente. Ambas as classes podem ser acessadas de maneira demonstrada pelo exemplo abaixo:
+QuickAutoML implementa duas abstrações de estimadores, denominados `Classifier` e `Regressor`, para problemas de classificação e regressão, respectivamente. Ambas as classes podem ser acessadas de maneira demonstrada pelo exemplo abaixo:
 
 ```python
 from sklearn.datasets import make_classification # dataset de exemplo
-from firecannon.estimators import Classifier, Regressor
+from quickautoml.estimators import Classifier, Regressor
 
 X_c, y_c = make_classification(n_classes=2, n_features=5, n_samples=100)
 
@@ -35,7 +35,7 @@ print(my_classifier.best_model) # por exemplo, KNeighborsClassifier(n_neighbors=
 ```
 
 ## Como funciona?
-Firecannon objetiva identificar um modelo adequado para determinado problema considerando um balanço entre tempo de execução e desempenho. Para isso, internamente, a Firecannon seleciona esse modelo através da definição de uma lista de candidatos possíveis. Estes candidatos podem ser o mesmo algoritmo, porém com configurações de hiper-parâmetros diferentes (por exemplo, várias versões de Random Forest, com número de estimadores diferentes entre si). Esta lista, no entanto, pode ser alterada conforme as [especificações do usuário](#personalizando-a-execução).
+QuickAutoML objetiva identificar um modelo adequado para determinado problema considerando um balanço entre tempo de execução e desempenho. Para isso, internamente, a QuickAutoML seleciona esse modelo através da definição de uma lista de candidatos possíveis. Estes candidatos podem ser o mesmo algoritmo, porém com configurações de hiper-parâmetros diferentes (por exemplo, várias versões de Random Forest, com número de estimadores diferentes entre si). Esta lista, no entanto, pode ser alterada conforme as [especificações do usuário](#personalizando-a-execução).
 
 ### Conceitos-chave
 * **NaiveModel**: Estrutura de dados referente a um modelo "ingênuo", isto é, que ainda não teve seus hiper-parâmetros ajustados. É utilizado para a definição de modelos personalizados pelo usuário, em detrimento dos algoritmos-padrão definidos internamente pela ferramenta. Para ser instanciado, necessita das seguintes informações: 
@@ -52,7 +52,7 @@ Firecannon objetiva identificar um modelo adequado para determinado problema con
 	* cv_score: a pontuação (score) obtida pelo modelo;
 
 ## Personalizando a execução
-Firecannon foi construído de forma a fornecer uma abstração de alto nível de treinamento de modelos, portanto, não requer que o usuário interaja com detalhes de baixo nível, como definição de algoritmos ou ajuste de hiper-parâmetros. Entretanto, é possível modificar esses detalhes, através da especificação dos seguintes parâmetros ao objeto estimador (```Classifier``` ou ```Regressor```):
+QuickAutoML foi construído de forma a fornecer uma abstração de alto nível de treinamento de modelos, portanto, não requer que o usuário interaja com detalhes de baixo nível, como definição de algoritmos ou ajuste de hiper-parâmetros. Entretanto, é possível modificar esses detalhes, através da especificação dos seguintes parâmetros ao objeto estimador (```Classifier``` ou ```Regressor```):
 
 * **model_settings: dict, default=None**: Especifica um dicionário de modelos personalizados, a qual deve conter instâncias de modelos como chaves e um dicionário de hiper-parâmetros **válidos** como valores. A estrutura de dicionário esperada por `model_settings` espera uma instância de NaiveModel, que representa um modelo com hiper-parâmetros ainda não ajustados, como chave do dicionário, e uma lista de objetos da classe Hyperparameter como instância. Consulte os [conceitos-chave](#conceitos-chave).
  
