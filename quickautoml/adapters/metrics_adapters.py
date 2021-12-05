@@ -3,7 +3,7 @@ from typing import Union, List
 from numpy import ndarray
 from sklearn.metrics import accuracy_score, recall_score, precision_score, mean_squared_error, r2_score
 
-from firecannon.protocols import Metrics
+from quickautoml.protocols import Metrics
 
 
 class SKLearnMetrics(Metrics):

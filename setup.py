@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='firecannon',
-    version='0.0.1',
+    name='quickautoml',
+    version='1.0.0',
     author='Wabbajack',
-    packages=find_packages(include=['firecannon']),
+    packages=find_packages(include=['quickautoml']),
     description='Quick tests for supervised machine learning entities',
     license='MIT',
     install_requires=[

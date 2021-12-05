@@ -3,8 +3,8 @@ from unittest import TestCase, main
 from numpy import array, nan, isnan, ndarray
 from pandas import DataFrame
 
-from firecannon.colors import ConsoleColors
-from firecannon.preprocessors import ConcreteStep, DataPreprocessor, GenericMatrixToDataframeDecorator
+from quickautoml.colors import ConsoleColors
+from quickautoml.preprocessors import ConcreteStep, DataPreprocessor, GenericMatrixToDataframeDecorator
 
 
 class PreprocessorsTestCase(TestCase):

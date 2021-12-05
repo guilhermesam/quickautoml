@@ -8,9 +8,9 @@ from optuna.logging import set_verbosity, WARNING
 from sklearn.model_selection import GridSearchCV, cross_val_score
 from numpy import mean, ndarray
 
-from firecannon.protocols import VerboseLevels
-from firecannon.entities import NaiveModel, FittedModel, Hyperparameter
-from firecannon.utils import load_json
+from quickautoml.protocols import VerboseLevels
+from quickautoml.entities import NaiveModel, FittedModel, Hyperparameter
+from quickautoml.utils import load_json
 
 
 class HyperparamsTunnerBase(ABC):

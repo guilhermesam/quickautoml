@@ -1,7 +1,7 @@
 from json import dump, load
 from io import FileIO
 
-from firecannon.exceptions import IncompatibleDataShapeException
+from quickautoml.exceptions import IncompatibleDataShapeException
 
 
 def load_json(path: str) -> dict:

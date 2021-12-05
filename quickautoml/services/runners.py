@@ -1,13 +1,12 @@
 from abc import abstractmethod
 from typing import Dict, List
 
-from firecannon.exceptions import InvalidParamException
-from firecannon.services.hyperparams_tunners import OptunaHyperparamsTunner
-from firecannon.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
-from firecannon.reports import BarplotReport, CsvReport, JsonReport
-from firecannon.utils import check_shape_compatibility
-from firecannon.preprocessors import DataPreprocessor
-from firecannon.entities import NaiveModel, FittedModel, Hyperparameter
+from quickautoml.exceptions import InvalidParamException
+from quickautoml.services.hyperparams_tunners import OptunaHyperparamsTunner
+from quickautoml.adapters.models_adapters import SKLearnModelsSupplier, ModelsSupplier
+from quickautoml.reports import BarplotReport, CsvReport, JsonReport
+from quickautoml.preprocessors import DataPreprocessor
+from quickautoml.entities import NaiveModel, FittedModel, Hyperparameter
 
 
 class BaseModel:

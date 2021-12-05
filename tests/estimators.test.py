@@ -1,10 +1,10 @@
 import unittest
 
-from firecannon.entities import Hyperparameter
-from firecannon.estimators import Classifier
-from firecannon.colors import ConsoleColors
-from firecannon.exceptions import InvalidParamException
-from firecannon.services.runners import NaiveModel
+from quickautoml.entities import Hyperparameter
+from quickautoml.estimators import Classifier
+from quickautoml.colors import ConsoleColors
+from quickautoml.exceptions import InvalidParamException
+from quickautoml.services.runners import NaiveModel
 
 
 from sklearn.datasets import make_classification
