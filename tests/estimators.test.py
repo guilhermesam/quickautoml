@@ -4,7 +4,7 @@ from quickautoml.entities import Hyperparameter
 from quickautoml.estimators import Classifier
 from quickautoml.colors import ConsoleColors
 from quickautoml.exceptions import InvalidParamException
-from quickautoml.services.runners import NaiveModel
+from quickautoml.estimators import NaiveModel
 
 
 from sklearn.datasets import make_classification
