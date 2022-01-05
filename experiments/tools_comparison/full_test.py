@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score
 from autosklearn.classification import AutoSklearnClassifier
 from tpot import TPOTClassifier
 
-from firecannon.estimators import Classifier
+from quickautoml.estimators import Classifier
 
 # TODO: Selecionar dataset e verificar se o mesmo ja existe em dataset_results.csv
 
@@ -45,13 +45,12 @@ class TrainingResults:
 
 
 def run() -> None:
-  datasets_list = 'datasets_stats.csv'
+  datasets_list = 'remain_datasets.csv'
   df = read_csv(datasets_list, sep=',')
 
-  classification_df = df[df['task'] == 'classification']
-  classification_dataset_names = classification_df['dataset']
+  classification_dataset_names = df['dataset']
 
-  file = open('tools_evaluation.csv', 'a')
+  file = open('tools_evaluation2.csv', 'a')
   results_writer = writer(file)
 
   counter = 0

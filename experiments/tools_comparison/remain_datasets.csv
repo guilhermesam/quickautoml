@@ -1,0 +1,12 @@
+dataset,n_instances,n_features,n_categorical_features,n_continuous_features,n_classes,imbalance,task,dimensionality,group
+page_blocks,5473,10,0,10,5.0,0.7627104291422278,classification,54730,F
+mfeat_zernike,2000,47,0,47,10.0,0.0,classification,94000,F
+hypothyroid,3163,25,1,7,2.0,0.8181582834802777,classification,79075,F
+churn,5000,20,2,16,2.0,0.5143758400000001,classification,100000,F
+analcatdata_authorship,841,70,3,67,4.0,0.0833968394457082,classification,58870,F
+kr_vs_kp,3196,36,1,0,2.0,0.0019740727223171,classification,115056,G
+mfeat_fourier,2000,76,0,76,10.0,0.0,classification,152000,G
+allbp,3772,29,4,6,3.0,0.8755228428707819,classification,109388,G
+agaricus_lepiota,8145,22,16,1,2.0,0.0014579364729441,classification,179190,G
+ring,7400,20,0,20,2.0,9.46676406135857e-05,classification,148000,G
+splice,3188,60,60,0,3.0,0.0776763041770503,classification,191280,G
