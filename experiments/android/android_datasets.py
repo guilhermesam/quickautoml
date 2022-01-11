@@ -6,7 +6,7 @@ from pandas import read_csv
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
-from firecannon.estimators import Classifier
+from quickautoml.estimators import Classifier
 
 file = open('logs.txt', 'a')
 
@@ -44,7 +44,7 @@ class TestSuite:
 
 androcrawl = TestSuite(
   dataset_name='Androcrawl',
-  dataset_path='../datasets/androcrawl.csv',
+  dataset_path='android_datasets/androcrawl.csv',
   output_file=file
 )
 
