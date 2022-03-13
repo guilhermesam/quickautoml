@@ -1,72 +1,40 @@
-from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import Union
 
 from numpy import ndarray, array
 from pandas import DataFrame
 
 
-class AbstractStep(ABC):
-  @abstractmethod
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]):
-    pass
+class DataPreprocessorWrapper:
+  def __init__(self, matrix: Union[DataFrame, ndarray]):
+    self.matrix = matrix
 
+  def convert_to_dataframe(self):
+    if not isinstance(self.matrix, DataFrame):
+      self.matrix = DataFrame(self.matrix)
+    return self
 
-class ConcreteStep(AbstractStep):
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]):
-    return matrix
+  def convert_df_to_np_array(self):
+    self.matrix = array(self.matrix)
+    return self
 
+  def remove_null_values(self):
+    self.matrix = self.matrix.dropna(axis=1, how='all').dropna()
+    return self
 
-class StepDecorator(AbstractStep):
-  def __init__(self, step: AbstractStep) -> None:
-    self._step = step
-
-  @property
-  def step(self) -> AbstractStep:
-    return self._step
-
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]):
-    return self._step.run(matrix)
-
-
-class GenericMatrixToDataframeDecorator(StepDecorator):
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]):
-    if not isinstance(matrix, DataFrame):
-      matrix = DataFrame(matrix)
-    return self.step.run(matrix)
-
-
-class RemoveNullValuesDecorator(StepDecorator):
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]):
-    matrix = matrix.dropna(axis=1, how='all')
-    matrix = matrix.dropna()
-    return self.step.run(matrix)
-
-
-class RemoveDuplicatesDecorator(StepDecorator):
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]):
-    matrix = matrix.drop_duplicates()
-    return self.step.run(matrix)
-
-
-class GenericMatrixToNPArrayDecorator(StepDecorator):
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]):
-    if not isinstance(matrix, ndarray):
-      matrix = array(matrix)
-    return self.step.run(matrix)
+  def remove_duplicates(self):
+    self.matrix = self.matrix.drop_duplicates()
+    return self
+  
+  def collect(self):
+    return self.matrix
 
 
 class DataPreprocessor:
-  def __init__(self):
-    pass
-
   @staticmethod
-  def __initialize_steps(step: AbstractStep, matrix: any) -> None:
-    return step.run(matrix)
-
-  def run(self, matrix: Union[ndarray, List[list], DataFrame]) -> object:
-    first_step = ConcreteStep()
-    convert_matrix_to_array_step = GenericMatrixToNPArrayDecorator(first_step)
-    remove_duplicates_step = RemoveDuplicatesDecorator(convert_matrix_to_array_step)
-    remove_null_step = RemoveNullValuesDecorator(remove_duplicates_step)
-    convert_matrix_to_dataframe_step = GenericMatrixToDataframeDecorator(remove_null_step)
-    return self.__initialize_steps(convert_matrix_to_dataframe_step, matrix)
+  def run(matrix: Union[DataFrame, ndarray]) -> ndarray:
+    return DataPreprocessorWrapper(matrix)\
+                                  .convert_to_dataframe()\
+                                  .remove_duplicates()\
+                                  .remove_null_values()\
+                                  .convert_df_to_np_array() \
+                                  .collect()
