@@ -1,6 +1,7 @@
 from typing import Union, Any, List
-
+from abc import ABC
 from numpy import ndarray
+from pandas import DataFrame
 
 
 class NaiveModel:
@@ -31,3 +32,8 @@ class Hyperparameter:
     self.data_type: str = data_type
     self.min_value: float = min_value
     self.max_value: float = max_value
+
+
+class Pipeline(ABC):
+  def execute(self) -> DataFrame:
+    ...
