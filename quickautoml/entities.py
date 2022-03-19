@@ -1,7 +1,14 @@
-from typing import Union, Any, List
+from typing import Union, Any, List, Optional, Dict
 from abc import ABC
 from numpy import ndarray
 from pandas import DataFrame
+
+
+class TrainingConfig:
+  def __init__(self):
+    self.metric: str = 'accuracy'
+    self.report_type: Optional[str] = None
+    self.search_space: dict = {}
 
 
 class NaiveModel:
@@ -18,8 +25,8 @@ class FittedModel(NaiveModel):
     super().__init__(name, estimator)
     self.cv_score: float = cv_score
 
-  def predict(self, X: Union[ndarray, List[list]]):
-    return self.estimator.predict(X)
+  def predict(self, x: Union[ndarray, List[list]]):
+    return self.estimator.predict(x)
 
 
 class Hyperparameter:

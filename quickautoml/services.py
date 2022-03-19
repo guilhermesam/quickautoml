@@ -13,7 +13,7 @@ from quickautoml.entities import NaiveModel, FittedModel, Hyperparameter
 from quickautoml.utils import load_json
 
 
-class HyperparamsTunnerBase(ABC):
+class HyperparamsOptimizer(ABC):
   def __init__(self,
                scoring: str
                ):
@@ -31,14 +31,14 @@ class HyperparamsTunnerBase(ABC):
            f'scoring: {self.scoring}'
 
   def run(self,
-          X: Union[ndarray, List[list]],
+          x: Union[ndarray, List[list]],
           y: Union[ndarray, List[list]],
           naive_model: NaiveModel,
           model_settings: List[Hyperparameter]) -> FittedModel:
     pass
 
 
-class OptunaHyperparamsTunner(HyperparamsTunnerBase):
+class OptunaHyperparamsOptimizer(HyperparamsOptimizer):
   def __init__(self, scoring: str):
     super().__init__(scoring)
 
@@ -50,7 +50,7 @@ class OptunaHyperparamsTunner(HyperparamsTunnerBase):
     }.get(data_type)
 
   def run(self,
-          X: Union[ndarray, List[list]],
+          x: Union[ndarray, List[list]],
           y: Union[ndarray, List[list]],
           naive_model: NaiveModel,
           model_settings: List[Hyperparameter]) -> FittedModel:
@@ -67,7 +67,7 @@ class OptunaHyperparamsTunner(HyperparamsTunnerBase):
           high=hyperparameter.max_value
         )})
       naive_model.estimator = naive_model.estimator.set_params(**optimizations)
-      score = cross_val_score(naive_model.estimator, X, y, n_jobs=self.n_jobs, cv=self.k_folds, scoring=self.scoring)
+      score = cross_val_score(naive_model.estimator, x, y, n_jobs=self.n_jobs, cv=self.k_folds, scoring=self.scoring)
       return float(mean(score))
 
     study = create_study(direction='maximize',
@@ -82,12 +82,12 @@ class OptunaHyperparamsTunner(HyperparamsTunnerBase):
     )
 
 
-class GridSearchHyperparamsTunner(HyperparamsTunnerBase):
+class GridSearchHyperparamsOptimizer(HyperparamsOptimizer):
   def __init__(self, scoring: str):
-    super(HyperparamsTunnerBase, self).__init__(scoring)
+    super(HyperparamsOptimizer, self).__init__(scoring)
 
   def run(self,
-          X: Union[ndarray, List[list]],
+          x: Union[ndarray, List[list]],
           y: Union[ndarray, List[list]],
           naive_model: NaiveModel,
           model_settings: List[Hyperparameter]) -> FittedModel:
@@ -97,7 +97,7 @@ class GridSearchHyperparamsTunner(HyperparamsTunnerBase):
                                verbose=self.verbose,
                                n_jobs=self.n_jobs,
                                scoring=self.scoring)
-    grid_search.fit(X, y)
+    grid_search.fit(x, y)
 
     return FittedModel(
       name=grid_search.best_estimator_.__str__(),

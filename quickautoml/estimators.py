@@ -2,28 +2,36 @@ from abc import abstractmethod
 from typing import Dict, List
 
 from quickautoml.exceptions import InvalidParamException, ModelNotFittedException
-from quickautoml.adapters import SKLearnModelsSupplier, ModelsSupplier
+from quickautoml.adapters import ModelsSupplier
+from quickautoml.entities import Hyperparameter
 from quickautoml.reports import BarplotReport, CsvReport, JsonReport
 from quickautoml.preprocessors import DataPreprocessor
-from quickautoml.entities import NaiveModel, FittedModel, Hyperparameter
-from quickautoml.services import OptunaHyperparamsTunner
+from quickautoml.entities import NaiveModel, FittedModel, TrainingConfig
+from quickautoml.services import OptunaHyperparamsOptimizer, HyperparamsOptimizer
+
+"""
+DataPreprocessor()
+FeatureEngineer()
+ModelsSupplier()
+HyperparameterOptimizer()
+"""
 
 
 class BaseModel:
   def __init__(self,
-               metric: str,
-               report_type: str = None,
-               models_settings: str = None,
-               models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
+               model_config: TrainingConfig,
+               hyperparameter_optimizer: HyperparamsOptimizer,
+               models_supplier: ModelsSupplier):
     self.best_model = None
-    self.metric = metric
-    self.report_type = report_type
+    self.metric = model_config.metric
+    self.report_type = model_config.report_type
+    self.hyperparameter_optimizer = hyperparameter_optimizer
     self._models_supplier = models_supplier
     self.__valid_report_types = [
       'plot', 'csv', 'json'
     ]
     self.__estimator_checks()
-    self.model_settings = self._default_models_config() if not models_settings else models_settings
+    self.model_settings = self._default_models_config()
     self.preprocessor = DataPreprocessor()
 
   @property
@@ -56,7 +64,7 @@ class BaseModel:
     # check_shape_compatibility(X, y)
     # X = self.preprocessor.run(X)
 
-    hyperparams_tunner = OptunaHyperparamsTunner(scoring=self.metric)
+    hyperparams_tunner = OptunaHyperparamsOptimizer(scoring=self.metric)
 
     scores = {}
 
@@ -94,13 +102,12 @@ class BaseModel:
 
 class Classifier(BaseModel):
   def __init__(self,
-               metric: str = 'accuracy',
-               report_type: str = None,
-               models_settings: dict = None
+               model_config: TrainingConfig,
+               hyperparameter_optimizer: HyperparamsOptimizer,
+               models_supplier: ModelsSupplier
                ):
     self.__valid_metrics = ['accuracy', 'precision', 'recall']
-    self.report_type = report_type
-    super().__init__(metric, report_type, models_settings)
+    super().__init__(model_config, hyperparameter_optimizer, models_supplier)
 
   def _check_valid_metric(self) -> None:
     if self.metric not in self.__valid_metrics:
