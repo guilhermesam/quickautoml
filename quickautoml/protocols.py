@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List, Union
+from dataclasses import dataclass
 
 from numpy import ndarray
 
@@ -8,6 +9,11 @@ from numpy import ndarray
 class VerboseLevels(Enum):
     DISABLED = 0
     ENABLED = 1
+
+
+@dataclass
+class ClassifierDefaults:
+    valid_metrics = ['accuracy', 'precision', 'recall']
 
 
 class Metrics(ABC):

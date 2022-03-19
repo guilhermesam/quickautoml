@@ -3,11 +3,11 @@ from typing import Dict, List
 
 from quickautoml.exceptions import InvalidParamException, ModelNotFittedException
 from quickautoml.adapters import ModelsSupplier
-from quickautoml.entities import Hyperparameter
 from quickautoml.reports import BarplotReport, CsvReport, JsonReport
 from quickautoml.preprocessors import DataPreprocessor
-from quickautoml.entities import NaiveModel, FittedModel, TrainingConfig
+from quickautoml.entities import NaiveModel, FittedModel, TrainingConfig, Hyperparameter
 from quickautoml.services import OptunaHyperparamsOptimizer, HyperparamsOptimizer
+from quickautoml.protocols import ClassifierDefaults
 
 """
 DataPreprocessor()
@@ -106,7 +106,7 @@ class Classifier(BaseModel):
                hyperparameter_optimizer: HyperparamsOptimizer,
                models_supplier: ModelsSupplier
                ):
-    self.__valid_metrics = ['accuracy', 'precision', 'recall']
+    self.__valid_metrics = ClassifierDefaults.valid_metrics
     super().__init__(model_config, hyperparameter_optimizer, models_supplier)
 
   def _check_valid_metric(self) -> None:
