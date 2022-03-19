@@ -97,7 +97,6 @@ PyYAML==6.0
 pyzmq==22.3.0
 qtconsole==5.2.1
 QtPy==1.11.3
-quickautoml==1.0.0
 requests==2.26.0
 scikit-learn==0.24.2
 scipy==1.7.3
@@ -132,3 +131,6 @@ widgetsnbextension==3.5.2
 xgboost==1.5.1
 zict==2.0.0
 zipp==3.6.0
+
+numpy~=1.22.3
+setuptools~=60.2.0

@@ -91,34 +91,6 @@ class BaseModel:
     report_types.get(report_type).make_report(scores)
 
 
-class Regressor(BaseModel):
-  def __init__(self,
-               metric: str = 'r2',
-               report_type: str = None,
-               models_settings: dict = None
-               ) -> None:
-    super().__init__(metric, models_settings, report_type)
-
-  def _default_models_config(self) -> None:
-    self.model_settings = {
-      self._models_supplier.get_model('rf-r'): {
-        'n_estimators': [50, 100, 150],
-        'criterion': ['mse', 'mae'],
-        'max_features': ['auto', 'log2', 'sqrt'],
-      },
-      self._models_supplier.get_model('lasso'): {
-        'alpha': [1.0, 1.5, 2.0],
-        'fit_intercept': [True, False],
-        'normalize': [True, False]
-      },
-      self._models_supplier.get_model('en'): {
-        'alpha': [1.0, 1.5, 2.0],
-        'fit_intercept': [True, False],
-        'normalize': [True, False]
-      }
-    }
-
-
 class Classifier(BaseModel):
   def __init__(self,
                metric: str = 'accuracy',
