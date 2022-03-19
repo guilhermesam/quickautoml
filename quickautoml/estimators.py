@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Dict, List
 
-from quickautoml.exceptions import InvalidParamException
+from quickautoml.exceptions import InvalidParamException, ModelNotFittedException
 from quickautoml.adapters import SKLearnModelsSupplier, ModelsSupplier
 from quickautoml.reports import BarplotReport, CsvReport, JsonReport
 from quickautoml.preprocessors import DataPreprocessor
@@ -15,7 +15,7 @@ class BaseModel:
                report_type: str = None,
                models_settings: str = None,
                models_supplier: ModelsSupplier = SKLearnModelsSupplier()):
-    self.best_model: FittedModel
+    self.best_model = None
     self.metric = metric
     self.report_type = report_type
     self._models_supplier = models_supplier
@@ -28,7 +28,8 @@ class BaseModel:
 
   @property
   def cv_score(self):
-    return self.best_model.cv_score
+    if not self.best_model:
+      raise ModelNotFittedException("Estimator not fitted yet. Call fit method before")
 
   def __estimator_checks(self):
     self._check_valid_metric()
@@ -51,7 +52,7 @@ class BaseModel:
   def _default_models_config(self) -> dict:
     raise NotImplementedError('Implement default models to test')
 
-  def fit(self, X, y) -> None:
+  def fit(self, x, y) -> None:
     # check_shape_compatibility(X, y)
     # X = self.preprocessor.run(X)
 
@@ -60,11 +61,11 @@ class BaseModel:
     scores = {}
 
     for model, params in self.model_settings.items():
-      best_model: FittedModel = hyperparams_tunner.run(X, y, model, params)
+      best_model: FittedModel = hyperparams_tunner.run(x, y, model, params)
       scores.update({best_model.estimator: best_model.cv_score})
 
     self.best_model = self._extract_best_model(scores)
-    self.best_model.estimator.fit(X, y)
+    self.best_model.estimator.fit(x, y)
 
     if self._check_valid_report_type():
       self.make_report_mapper(self.report_type, scores)
@@ -78,8 +79,8 @@ class BaseModel:
       estimator=best_model
     )
 
-  def predict(self, X):
-    return self.best_model.predict(X)
+  def predict(self, x):
+    return self.best_model.predict(x)
 
   @staticmethod
   def make_report_mapper(report_type: str, scores: dict):
@@ -96,7 +97,7 @@ class Classifier(BaseModel):
                metric: str = 'accuracy',
                report_type: str = None,
                models_settings: dict = None
-               ) -> None:
+               ):
     self.__valid_metrics = ['accuracy', 'precision', 'recall']
     self.report_type = report_type
     super().__init__(metric, report_type, models_settings)
@@ -120,11 +121,3 @@ class Classifier(BaseModel):
         Hyperparameter(name='learning_rate', data_type='float', min_value=0.1, max_value=2)
       ]
     }
-
-
-if __name__ == '__main__':
-  from sklearn.datasets import make_classification
-
-  X, y = make_classification()
-  c = Classifier(report_type='json')
-  c.fit(X, y)
