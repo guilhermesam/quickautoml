@@ -11,7 +11,7 @@ from quickautoml.estimators import NaiveModel
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 
-from quickautoml.services import OptunaHyperparamsOptimizer
+from quickautoml.hyperparameter_optimizer import OptunaHyperparamsOptimizer
 from tests.resources import LogisticRegressionStub
 
 

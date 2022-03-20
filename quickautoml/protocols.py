@@ -22,6 +22,7 @@ class HyperparamsOptimizerDefaults:
     k_folds: int = 5
     n_jobs: int = -1
     verbose: int = 0
+    scoring: str = 'accuracy'
 
 
 class Metrics(ABC):

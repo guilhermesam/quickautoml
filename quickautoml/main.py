@@ -1,16 +1,18 @@
 from quickautoml.adapters import SKLearnModelsSupplier
-from quickautoml.entities import TrainingConfig
 from quickautoml.estimators import Classifier
-from quickautoml.services import OptunaHyperparamsOptimizer
+from quickautoml.feature_engineering import PandasFeatureEngineer
+from quickautoml.hyperparameter_optimizer import OptunaHyperparamsOptimizer
+from quickautoml.preprocessors import PandasDataPreprocessor
 from quickautoml.utils import generate_fake_data
 from quickautoml.entities import NaiveModel, Hyperparameter
 
 
 def make_classifier():
-  training_config = TrainingConfig()
-  hyperparameter_optimizer = OptunaHyperparamsOptimizer(training_config.metric)
+  data_preprocessor = PandasDataPreprocessor()
+  feature_engineer = PandasFeatureEngineer()
+  hyperparameter_optimizer = OptunaHyperparamsOptimizer('accuracy')
   models_supplier = SKLearnModelsSupplier()
-  return Classifier(training_config, hyperparameter_optimizer, models_supplier)
+  return Classifier(data_preprocessor, feature_engineer, models_supplier, hyperparameter_optimizer)
 
 
 if __name__ == '__main__':

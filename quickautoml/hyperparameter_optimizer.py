@@ -1,38 +1,12 @@
-from abc import ABC
 from typing import Callable, List, Union
-from pathlib import Path
 
 from optuna import Trial, create_study
 from optuna.logging import set_verbosity, WARNING
 from sklearn.model_selection import GridSearchCV, cross_val_score
 from numpy import mean, ndarray
 
-from quickautoml.protocols import HyperparamsOptimizerDefaults, VerboseLevels
-from quickautoml.entities import NaiveModel, FittedModel, Hyperparameter
-
-
-class HyperparamsOptimizer(ABC):
-  def __init__(self,
-               scoring: str
-               ):
-    __dir = Path(__file__).parent.resolve()
-    self.k_folds: int = HyperparamsOptimizerDefaults.k_folds
-    self.n_jobs: int = HyperparamsOptimizerDefaults.n_jobs
-    self.verbose: int = HyperparamsOptimizerDefaults.verbose
-    self.scoring: str = scoring
-
-  def __str__(self) -> str:
-    return f'k_folds: {self.k_folds}\n' \
-           f'n_jobs: {self.n_jobs}\n' \
-           f'verbose: {self.verbose}\n' \
-           f'scoring: {self.scoring}'
-
-  def run(self,
-          x: Union[ndarray, List[list]],
-          y: Union[ndarray, List[list]],
-          naive_model: NaiveModel,
-          model_settings: List[Hyperparameter]) -> FittedModel:
-    pass
+from quickautoml.protocols import VerboseLevels
+from quickautoml.entities import NaiveModel, FittedModel, Hyperparameter, HyperparamsOptimizer
 
 
 class OptunaHyperparamsOptimizer(HyperparamsOptimizer):

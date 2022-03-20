@@ -3,6 +3,8 @@ from abc import ABC
 from numpy import ndarray
 from pandas import DataFrame
 
+from quickautoml.protocols import HyperparamsOptimizerDefaults
+
 
 class TrainingConfig:
   def __init__(self):
@@ -20,15 +22,6 @@ class NaiveModel:
     return self.estimator.__str__()
 
 
-class FittedModel(NaiveModel):
-  def __init__(self, name: str, cv_score: float, estimator: Any):
-    super().__init__(name, estimator)
-    self.cv_score: float = cv_score
-
-  def predict(self, x: Union[ndarray, List[list]]):
-    return self.estimator.predict(x)
-
-
 class Hyperparameter:
   def __init__(self,
                name: str,
@@ -41,6 +34,67 @@ class Hyperparameter:
     self.max_value: float = max_value
 
 
-class Pipeline(ABC):
-  def execute(self) -> DataFrame:
+class FittedModel(NaiveModel):
+  def __init__(self, name: str, cv_score: float, estimator: Any):
+    super().__init__(name, estimator)
+    self.cv_score: float = cv_score
+
+  def predict(self, x: Union[ndarray, List[list]]):
+    return self.estimator.predict(x)
+
+
+class DataPreprocessor:
+  def __init__(self):
+    self.matrix = None
+
+  def __convert_to_dataframe(self):
     ...
+
+  def __convert_df_to_np_array(self):
+    ...
+
+  def __remove_null_values(self):
+    ...
+
+  def __remove_duplicates(self):
+    ...
+
+  def __collect(self):
+    ...
+
+  def run(self, matrix: Union[DataFrame, ndarray]):
+    ...
+
+
+class FeatureEngineer(ABC):
+  def remove_umbalanced_columns(self, matrix: any):
+    ...
+
+  def count_used_permissions(self, matrix: any):
+    ...
+
+  def remove_columns_with_unique_values(self, matrix: any):
+    ...
+
+
+class HyperparamsOptimizer(ABC):
+  def __init__(self,
+               scoring: Optional[str]
+               ):
+    self.k_folds: int = HyperparamsOptimizerDefaults.k_folds
+    self.n_jobs: int = HyperparamsOptimizerDefaults.n_jobs
+    self.verbose: int = HyperparamsOptimizerDefaults.verbose
+    self.scoring: str = scoring
+
+  def __str__(self) -> str:
+    return f'k_folds: {self.k_folds}\n' \
+           f'n_jobs: {self.n_jobs}\n' \
+           f'verbose: {self.verbose}\n' \
+           f'scoring: {self.scoring}'
+
+  def run(self,
+          x: Union[ndarray, List[list]],
+          y: Union[ndarray, List[list]],
+          naive_model: NaiveModel,
+          model_settings: List[Hyperparameter]) -> FittedModel:
+    pass
