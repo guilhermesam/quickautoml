@@ -16,6 +16,13 @@ class ClassifierDefaults:
     valid_metrics = ['accuracy', 'precision', 'recall']
 
 
+@dataclass()
+class HyperparamsOptimizerDefaults:
+    k_folds: int = 5
+    n_jobs: int = -1
+    verbose: int = 0
+
+
 class Metrics(ABC):
     @staticmethod
     @abstractmethod

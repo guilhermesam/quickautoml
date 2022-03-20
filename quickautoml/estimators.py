@@ -102,12 +102,12 @@ class BaseModel:
 
 class Classifier(BaseModel):
   def __init__(self,
-               model_config: TrainingConfig,
+               training_config: TrainingConfig,
                hyperparameter_optimizer: HyperparamsOptimizer,
                models_supplier: ModelsSupplier
                ):
     self.__valid_metrics = ClassifierDefaults.valid_metrics
-    super().__init__(model_config, hyperparameter_optimizer, models_supplier)
+    super().__init__(training_config, hyperparameter_optimizer, models_supplier)
 
   def _check_valid_metric(self) -> None:
     if self.metric not in self.__valid_metrics:

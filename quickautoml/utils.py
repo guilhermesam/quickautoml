@@ -1,7 +1,16 @@
 from json import dump, load
 from io import FileIO
 
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+
 from quickautoml.exceptions import IncompatibleDataShapeException
+
+
+def generate_fake_data():
+    x, y = make_classification()
+    # x_train, x_test, y_train, y_test
+    return train_test_split(x, y, test_size=0.20, random_state=42)
 
 
 def load_json(path: str) -> dict:
@@ -23,7 +32,7 @@ def close_file(file: FileIO):
     file.close()
 
 
-def check_shape_compatibility(X: any, y: any) -> None:
-    ROW_INDEX = 0
-    if X.shape[ROW_INDEX] != y.shape[ROW_INDEX]:
-        raise IncompatibleDataShapeException(X.shape[0], y.shape[0])
+def check_shape_compatibility(x: any, y: any) -> None:
+    row_index = 0
+    if x.shape[row_index] != y.shape[row_index]:
+        raise IncompatibleDataShapeException(x.shape[0], y.shape[0])

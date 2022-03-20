@@ -1,6 +1,7 @@
 import unittest
 
-from quickautoml.entities import Hyperparameter
+from quickautoml.adapters import SKLearnModelsSupplier
+from quickautoml.entities import Hyperparameter, TrainingConfig
 from quickautoml.estimators import Classifier
 from quickautoml.colors import ConsoleColors
 from quickautoml.exceptions import InvalidParamException
@@ -10,6 +11,7 @@ from quickautoml.estimators import NaiveModel
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 
+from quickautoml.services import OptunaHyperparamsOptimizer
 from tests.resources import LogisticRegressionStub
 
 
@@ -31,32 +33,52 @@ class EstimatorsTestCase(unittest.TestCase):
     model_parameters = {
       Hyperparameter(name='learning_rate', data_type='float', min_value=0.01, max_value=1),
     }
-    estimator = Classifier(models_settings={
-      my_model: model_parameters
-    })
+    training_config = TrainingConfig()
+    training_config.search_space = model_parameters
+    hyperparameter_optimizer = OptunaHyperparamsOptimizer(training_config.metric)
+    models_supplier = SKLearnModelsSupplier()
+    estimator = Classifier(training_config, hyperparameter_optimizer, models_supplier)
     estimator.fit(self.X_train, self.y_train)
 
   def test_invalid_report_type(self):
     print('Should throw if invalid report type is supplied... ', end='')
     with self.assertRaises(InvalidParamException):
-      estimator = Classifier(report_type='invalid')
+      training_config = TrainingConfig()
+      training_config.report_type = 'invalid'
+      hyperparameter_optimizer = OptunaHyperparamsOptimizer(training_config.metric)
+      models_supplier = SKLearnModelsSupplier()
+
+      estimator = Classifier(training_config, hyperparameter_optimizer, models_supplier)
 
   def test_valid_report_type(self):
     print('Should be ok if valid report type is supplied...', end='')
     try:
-      estimator = Classifier(report_type='plot')
+      training_config = TrainingConfig()
+      training_config.report_type = 'plot'
+      hyperparameter_optimizer = OptunaHyperparamsOptimizer(training_config.metric)
+      models_supplier = SKLearnModelsSupplier()
+      estimator = Classifier(training_config, hyperparameter_optimizer, models_supplier)
+
     except Exception as exception:
       self.fail(f'Valid report type supplied throws {exception} unexpectedly')
 
   def test_invalid_metric(self):
     print('Should throw if invalid metric is supplied... ', end='')
     with self.assertRaises(InvalidParamException):
-      estimator = Classifier(metric='invalid')
+      training_config = TrainingConfig()
+      training_config.metric = 'invalid'
+      hyperparameter_optimizer = OptunaHyperparamsOptimizer(training_config.metric)
+      models_supplier = SKLearnModelsSupplier()
+      estimator = Classifier(training_config, hyperparameter_optimizer, models_supplier)
     
   def test_valid_metric(self):
     print('Should be ok if valid metric is supplied... ', end='')
     try:
-      estimator = Classifier(metric='accuracy')
+      training_config = TrainingConfig()
+      training_config.metric = 'accuracy'
+      hyperparameter_optimizer = OptunaHyperparamsOptimizer(training_config.metric)
+      models_supplier = SKLearnModelsSupplier()
+      estimator = Classifier(training_config, hyperparameter_optimizer, models_supplier)
     except Exception as exception:
       self.fail(f'Valid metric supplied throws {exception} unexpectedly')
 

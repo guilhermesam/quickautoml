@@ -1,6 +1,5 @@
 from abc import ABC
 from typing import Callable, List, Union
-from os.path import join
 from pathlib import Path
 
 from optuna import Trial, create_study
@@ -8,9 +7,8 @@ from optuna.logging import set_verbosity, WARNING
 from sklearn.model_selection import GridSearchCV, cross_val_score
 from numpy import mean, ndarray
 
-from quickautoml.protocols import VerboseLevels
+from quickautoml.protocols import HyperparamsOptimizerDefaults, VerboseLevels
 from quickautoml.entities import NaiveModel, FittedModel, Hyperparameter
-from quickautoml.utils import load_json
 
 
 class HyperparamsOptimizer(ABC):
@@ -18,11 +16,10 @@ class HyperparamsOptimizer(ABC):
                scoring: str
                ):
     __dir = Path(__file__).parent.resolve()
-    default_config: dict = load_json(join(__dir, 'default_config.json'))
-    self.k_folds: int = default_config['k_folds']
+    self.k_folds: int = HyperparamsOptimizerDefaults.k_folds
+    self.n_jobs: int = HyperparamsOptimizerDefaults.n_jobs
+    self.verbose: int = HyperparamsOptimizerDefaults.verbose
     self.scoring: str = scoring
-    self.n_jobs: int = default_config['n_jobs']
-    self.verbose: int = default_config['verbose']
 
   def __str__(self) -> str:
     return f'k_folds: {self.k_folds}\n' \
