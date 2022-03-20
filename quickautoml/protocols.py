@@ -14,6 +14,7 @@ class VerboseLevels(Enum):
 @dataclass
 class ClassifierDefaults:
     valid_metrics = ['accuracy', 'precision', 'recall']
+    valid_report_types = ['plot', 'csv', 'json']
 
 
 @dataclass()
