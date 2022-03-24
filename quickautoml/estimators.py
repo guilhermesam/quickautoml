@@ -1,5 +1,7 @@
 from typing import Dict, List
 
+from sklearn.model_selection import train_test_split
+
 from quickautoml.exceptions import InvalidParamException, ModelNotFittedException
 from quickautoml.adapters import ModelsSupplier
 from quickautoml.reports import BarplotReport, CsvReport, JsonReport
@@ -22,6 +24,8 @@ class Classifier:
     self.hyperparameter_optimizer = hyperparameter_optimizer
     self.training_config = TrainingConfig()
     self.training_config.search_space = self._default_models_config()
+    self.x_test = None
+    self.y_test = None
 
     self.__valid_metrics = ClassifierDefaults.valid_metrics
     self.__valid_report_types = ClassifierDefaults.valid_report_types
@@ -67,19 +71,28 @@ class Classifier:
     else:
       return False
 
-  def fit(self, x, y) -> None:
-    print(x.shape)
-    x = self.data_preprocessor.run(x)
-    print(x.shape)
+  def fit(self, data) -> None:
+    processed_data = self.data_preprocessor.run(data)
+    del data
+
+    feat_engineered_data = self.feature_engineer.run(processed_data)
+    del processed_data
+
+    x = feat_engineered_data.drop(self.training_config.y_label, axis=1)
+    y = feat_engineered_data[self.training_config.y_label]
+    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.20, random_state=42)
+
+    self.x_test = x_test
+    self.y_test = y_test
 
     scores = {}
 
     for model, params in self.training_config.search_space.items():
-      best_model: FittedModel = self.hyperparameter_optimizer.run(x, y, model, params)
+      best_model: FittedModel = self.hyperparameter_optimizer.run(x_train, y_train, model, params)
       scores.update({best_model.estimator: best_model.cv_score})
 
     self.best_model = self._extract_best_model(scores)
-    self.best_model.estimator.fit(x, y)
+    self.best_model.estimator.fit(x_train, y_train)
 
     if self._check_valid_report_type():
       self.__make_report_mapper(self.training_config.report_type, scores)
@@ -93,8 +106,8 @@ class Classifier:
       estimator=best_model
     )
 
-  def predict(self, x):
-    return self.best_model.predict(x)
+  def predict(self):
+    return self.best_model.predict(self.x_test)
 
   @staticmethod
   def __make_report_mapper(report_type: str, scores: dict):

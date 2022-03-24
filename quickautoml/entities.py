@@ -8,6 +8,7 @@ from quickautoml.protocols import HyperparamsOptimizerDefaults
 
 class TrainingConfig:
   def __init__(self):
+    self.y_label: str = 'class'
     self.metric: str = 'accuracy'
     self.report_type: Optional[str] = None
     self.search_space: dict = {}
@@ -66,14 +67,23 @@ class DataPreprocessor:
     ...
 
 
-class FeatureEngineer(ABC):
-  def remove_umbalanced_columns(self, matrix: any):
+class FeatureEngineer:
+  def __init__(self):
+    self.matrix = None
+
+  def __remove_umbalanced_columns(self):
     ...
 
-  def count_used_permissions(self, matrix: any):
+  def __count_used_permissions(self):
     ...
 
-  def remove_columns_with_unique_values(self, matrix: any):
+  def __remove_columns_with_unique_values(self):
+    ...
+
+  def __collect(self):
+    ...
+
+  def run(self, matrix: Union[DataFrame, ndarray]):
     ...
 
 

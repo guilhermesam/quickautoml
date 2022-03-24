@@ -35,5 +35,4 @@ class PandasDataPreprocessor(DataPreprocessor):
     return self.__convert_to_dataframe()\
                .__remove_duplicates()\
                .__remove_null_values()\
-               .__convert_df_to_np_array() \
                .__collect()

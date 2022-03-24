@@ -3,8 +3,9 @@ from quickautoml.estimators import Classifier
 from quickautoml.feature_engineering import PandasFeatureEngineer
 from quickautoml.hyperparameter_optimizer import OptunaHyperparamsOptimizer
 from quickautoml.preprocessors import PandasDataPreprocessor
-from quickautoml.utils import generate_fake_data
 from quickautoml.entities import NaiveModel, Hyperparameter
+
+import pandas as pd
 
 
 def make_classifier():
@@ -17,7 +18,7 @@ def make_classifier():
 
 if __name__ == '__main__':
   estimator = make_classifier()
-  x_train, x_test, y_train, y_test = generate_fake_data()
+  df = pd.read_csv('../experiments/android/android_datasets/drebin-215.csv')
 
   default = {
       NaiveModel(name='KNeighbors Classifier', estimator=SKLearnModelsSupplier().get_model('knn-c')): [
@@ -30,7 +31,7 @@ if __name__ == '__main__':
       ]
     }
 
-  estimator.training_config.search_space = default
-  estimator.fit(x_train, y_train)
-  estimator.predict(x_test)
+  estimator.training_config.report_type = 'plot'
+  estimator.fit(df)
+
   print(estimator.best_model)
