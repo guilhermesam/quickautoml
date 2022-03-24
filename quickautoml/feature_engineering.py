@@ -14,7 +14,7 @@ class PandasFeatureEngineer(FeatureEngineer):
     def get_diff_in_value_counts(value_counts: Series) -> float:
       return value_counts.min() / value_counts.sum()
 
-    threshold: int = 5
+    threshold: int = 10
     to_drop_rows: List[str] = [
       c for c in self.matrix.columns if get_diff_in_value_counts(self.matrix[c].value_counts()) < threshold
     ]
@@ -38,7 +38,6 @@ class PandasFeatureEngineer(FeatureEngineer):
 
   def run(self, matrix):
     self.matrix = matrix
-    return self.__remove_umbalanced_columns() \
-               .__count_used_permissions() \
+    return self.__count_used_permissions() \
                .__remove_columns_with_unique_values() \
                .__collect()

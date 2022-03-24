@@ -18,7 +18,7 @@ def make_classifier():
 
 if __name__ == '__main__':
   estimator = make_classifier()
-  df = pd.read_csv('../experiments/android/android_datasets/drebin-215.csv')
+  df = pd.read_csv('drebin-215.csv')
 
   default = {
       NaiveModel(name='KNeighbors Classifier', estimator=SKLearnModelsSupplier().get_model('knn-c')): [

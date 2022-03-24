@@ -73,6 +73,7 @@ class Classifier:
 
   def fit(self, data) -> None:
     processed_data = self.data_preprocessor.run(data)
+
     del data
 
     feat_engineered_data = self.feature_engineer.run(processed_data)
@@ -80,7 +81,8 @@ class Classifier:
 
     x = feat_engineered_data.drop(self.training_config.y_label, axis=1)
     y = feat_engineered_data[self.training_config.y_label]
-    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.20, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=1 / self.hyperparameter_optimizer.k_folds,
+                                                        random_state=42)
 
     self.x_test = x_test
     self.y_test = y_test
