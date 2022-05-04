@@ -71,7 +71,7 @@ class FeatureEngineer:
   def __init__(self):
     self.matrix = None
 
-  def __remove_umbalanced_columns(self):
+  def __remove_unbalanced_columns(self):
     ...
 
   def __count_used_permissions(self):

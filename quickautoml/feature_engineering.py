@@ -10,7 +10,7 @@ class PandasFeatureEngineer(FeatureEngineer):
   def __init__(self):
     super().__init__()
 
-  def __remove_umbalanced_columns(self):
+  def __remove_unbalanced_columns(self):
     def get_diff_in_value_counts(value_counts: Series) -> float:
       return value_counts.min() / value_counts.sum()
 
