@@ -71,30 +71,20 @@ class Classifier:
     else:
       return False
 
-  def fit(self, data) -> None:
-    processed_data = self.data_preprocessor.run(data)
+  def fit(self, X, y) -> None:
+    # x_train, x_test, y_train, y_test = train_test_split(X, y, train_size=1 / self.hyperparameter_optimizer.k_folds, random_state=42)
 
-    del data
-
-    feat_engineered_data = self.feature_engineer.run(processed_data)
-    del processed_data
-
-    x = feat_engineered_data.drop(self.training_config.y_label, axis=1)
-    y = feat_engineered_data[self.training_config.y_label]
-    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=1 / self.hyperparameter_optimizer.k_folds,
-                                                        random_state=42)
-
-    self.x_test = x_test
-    self.y_test = y_test
+    # self.x_test = x_test
+    # self.y_test = y_test
 
     scores = {}
 
     for model, params in self.training_config.search_space.items():
-      best_model: FittedModel = self.hyperparameter_optimizer.run(x_train, y_train, model, params)
+      best_model: FittedModel = self.hyperparameter_optimizer.run(X, y, model, params)
       scores.update({best_model.estimator: best_model.cv_score})
 
     self.best_model = self._extract_best_model(scores)
-    self.best_model.estimator.fit(x_train, y_train)
+    self.best_model.estimator.fit(X, y)
 
     if self._check_valid_report_type():
       self.__make_report_mapper(self.training_config.report_type, scores)
@@ -108,8 +98,18 @@ class Classifier:
       estimator=best_model
     )
 
-  def predict(self):
-    return self.best_model.predict(self.x_test)
+  def predict(self, X_test):
+    return self.best_model.predict(X_test)
+
+  def prepare_data(self, data):
+    processed_data = self.data_preprocessor.run(data)
+    del data
+
+    feat_engineered_data = self.feature_engineer.run(processed_data)
+    del processed_data
+
+    return feat_engineered_data
+
 
   @staticmethod
   def __make_report_mapper(report_type: str, scores: dict):
