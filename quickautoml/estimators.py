@@ -72,8 +72,6 @@ class Classifier:
       return False
 
   def fit(self, X, y) -> None:
-    # x_train, x_test, y_train, y_test = train_test_split(X, y, train_size=1 / self.hyperparameter_optimizer.k_folds, random_state=42)
-
     # self.x_test = x_test
     # self.y_test = y_test
 
