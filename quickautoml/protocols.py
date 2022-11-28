@@ -17,12 +17,12 @@ class ClassifierDefaults:
     valid_report_types = ['plot', 'csv', 'json']
 
 
-@dataclass()
+@dataclass
 class HyperparamsOptimizerDefaults:
     k_folds: int = 5
     n_jobs: int = -1
-    verbose: int = 0
-    scoring: str = 'accuracy'
+    verbose: int = 1
+    scoring: str = 'recall'
 
 
 class Metrics(ABC):
