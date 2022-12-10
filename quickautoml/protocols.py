@@ -23,30 +23,3 @@ class HyperparamsOptimizerDefaults:
     n_jobs: int = -1
     verbose: int = 1
     scoring: str = 'recall'
-
-
-class Metrics(ABC):
-    @staticmethod
-    @abstractmethod
-    def mse(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def r2(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def accuracy(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def precision(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def recall(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
-        pass
