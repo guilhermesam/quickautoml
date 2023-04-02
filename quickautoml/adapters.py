@@ -9,8 +9,6 @@ from sklearn.tree import DecisionTreeClassifier
 from numpy import ndarray
 from sklearn.metrics import accuracy_score, recall_score, precision_score, mean_squared_error, r2_score
 
-from quickautoml.protocols import Metrics
-
 
 class ModelsSupplier(ABC):
     def __init__(self) -> None:
@@ -51,7 +49,7 @@ class SKLearnModelsSupplier(ModelsSupplier):
         return self._models_codes.get(model_name)
 
 
-class SKLearnMetrics(Metrics):
+class SKLearnMetrics:
     @staticmethod
     def mse(y_true: Union[ndarray, List[float]], y_pred: Union[ndarray, List[float]]):
         return mean_squared_error(y_true, y_pred)
