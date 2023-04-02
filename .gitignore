@@ -26,3 +26,6 @@ build
 dist
 quickautoml.egg-info
 *.pyc
+
+# Docs
+docs/
