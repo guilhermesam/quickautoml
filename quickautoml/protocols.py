@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import List, Union
+from typing import Dict, List
 from dataclasses import dataclass
 
-from numpy import ndarray
+from quickautoml.entities import NaiveModel, Hyperparameter
 
 
 class VerboseLevels(Enum):
@@ -15,11 +15,3 @@ class VerboseLevels(Enum):
 class ClassifierDefaults:
     valid_metrics = ['accuracy', 'precision', 'recall']
     valid_report_types = ['plot', 'csv', 'json']
-
-
-@dataclass
-class HyperparamsOptimizerDefaults:
-    k_folds: int = 5
-    n_jobs: int = -1
-    verbose: int = 1
-    scoring: str = 'recall'

@@ -1,6 +1,6 @@
 import unittest
 
-from quickautoml.adapters import SKLearnModelsSupplier
+from quickautoml.classifiers import SKLearnModelsSupplier
 from quickautoml.entities import Hyperparameter, TrainingConfig
 from quickautoml.estimators import Classifier
 from quickautoml.colors import ConsoleColors

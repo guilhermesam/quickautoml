@@ -36,7 +36,8 @@ class DataPreprocessor:
 
     def run(self, matrix: Union[DataFrame, ndarray]):
         self.__init_matrix(matrix)
-        return self.__convert_to_dataframe() \
-            .__remove_duplicates() \
-            .__remove_null_values() \
-            .__collect()
+        return (self.__convert_to_dataframe()
+                .__remove_duplicates()
+                .__remove_null_values()
+                .__collect()
+                )
